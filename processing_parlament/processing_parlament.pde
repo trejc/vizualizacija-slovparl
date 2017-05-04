@@ -55,10 +55,30 @@ class Politik {
   public String toString(){
     return this.XMLperson.toString();
   }
- 
+  
 }
+
+public void uvrstiVStranko(XML person,  HashMap<String, PStranka> stranke){
+    Politik tmp = new Politik(person);
+    tmp.id = person.getString("xml:id");
+    for(XML affil : person.getChildren("affiliation")){
+        String ref = affil.getString("ref");
+         
+        if( ref != null){
+           ref = ref.substring(1,ref.length());
+           println("REF: " + ref ); 
+          if(stranke.containsKey(ref)){
+            
+            stranke.get(ref).politiki.put(tmp.id, tmp);
+            politiki.put(tmp.id, tmp);
+          }
+          
+        }
+    }
+  }
+  
 public boolean naloziPolitike(boolean debug, HashMap<String, PStranka> stranke){
-    neuvrsceno = new  HashMap<String, Politik>();
+    politiki = new  HashMap<String, Politik>();
     Politik tmp = null;
     XML xml = loadXML("SlovParl/SlovParl.xml");
     
@@ -68,52 +88,19 @@ public boolean naloziPolitike(boolean debug, HashMap<String, PStranka> stranke){
     
   
     for(XML person : izvZako) {
-      tmp = new Politik(person);
-      if(debug)System.out.println(tmp+"\n\n");
-      tmp.id = person.getString("xml:id");
-         
-      for(XML affil : person.getChildren("affiliation")){
-        String ref = affil.getString("ref");
-        if( ref != null){
-         
-          if(stranke.containsKey(ref)){
-             if(debug ||true )println("Politik ima stranko: " + ref ); 
-            stranke.get(ref).politiki.put(tmp.id, tmp);
-          }else{
-             neuvrsceno.put(tmp.id, tmp);
-          }
-        }
-      
-      }
+      uvrstiVStranko(  person,    stranke);
       
       
     }
     for(XML person : predstav) {
-      tmp = new Politik(person);
-      if(debug)System.out.println(tmp+"\n\n");
-      tmp.id = person.getString("xml:id");
-      
-      
-      for(XML affil : person.getChildren("affiliation")){
-        String ref = affil.getString("ref");
-        if( ref != null){
-          
-          if(stranke.containsKey(ref)){
-            if(debug ||true )println("Politik ima stranko: " + ref ); 
-            stranke.get(ref).politiki.put(tmp.id, tmp);
-          }else{
-            neuvrsceno.put(tmp.id, tmp);
-          }
-        }
-      
-      }
+       uvrstiVStranko(  person,    stranke);
  
     }
  
     return true;
 }
 
-HashMap<String, Politik> neuvrsceno;
+HashMap<String, Politik> politiki;
 HashMap<String, PStranka> stranke;
 
 void setup() {
@@ -139,9 +126,9 @@ void setup() {
       }
     }
   }
-
+  println(stranke.keySet());
   println("število strank:" + stranke.size());
-  if( naloziPolitike(false,stranke)) System.out.println("nalaganje politikov koncano!\nŠtevilo neuvrščenih elementov: " + neuvrsceno.size());
+  if( naloziPolitike(false,stranke)) System.out.println("nalaganje politikov koncano!\nŠtevilo neuvrščenih elementov: " + politiki.size());
 }
 
 void draw() {
