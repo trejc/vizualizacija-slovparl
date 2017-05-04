@@ -1,38 +1,21 @@
+import java.util.Map;
+
 class PStranka {
-  String ime;
-  String kratica_imena;
-  String datum_ustanovitve;
-  String datum_konca;
+  XML[] orgNames;
   HashMap<String, Politik> politiki;
   
   public PStranka() {
     politiki = new HashMap<String, Politik>();
   }
   
-  public PStranka(String ime, String kratica_imena, String datum_ustanovitve, String datum_konca) {
-    this.ime = ime;
-    this.kratica_imena = kratica_imena;
-    this.datum_ustanovitve = datum_ustanovitve;
-    this.datum_konca = datum_konca;
+  public PStranka(XML[] orgNames) {
+    this.orgNames = orgNames;
     
     politiki = new HashMap<String, Politik>();
   }
   
   public void dodaj_podatke_iz_xml(XML xml) {
-    XML state = xml.getChild("state");
-    if(state != null) {
-      this.datum_ustanovitve = state.getString("from");
-      this.datum_konca = state.getString("to");
-      for(XML s_ime : xml.getChildren("orgName")) {
-        if(s_ime.getString("full").equals("yes")) {
-          this.ime = s_ime.getContent();
-        }else if(s_ime.getString("full").equals("init")) {
-          this.kratica_imena = s_ime.getContent();
-        }
-      }
-    }else {
-
-    }
+    this.orgNames = xml.getChildren("orgName");
   }
 }
 
@@ -71,6 +54,7 @@ HashMap<String, PStranka> stranke;
 void setup() {
   size(800, 600);
   background(250);
+  stranke = new HashMap<String, PStranka>();
   
   XML xml = loadXML("SlovParl/SlovParl.xml");
   
@@ -84,15 +68,14 @@ void setup() {
           for(XML stranka : list_strank) {
             PStranka s = new PStranka();
             s.dodaj_podatke_iz_xml(stranka);
-            if(Integer.parseInt(s.datum_ustanovitve.substring(0, 4)) < 1993) {
-              
-            }
+            stranke.put(stranka.getString("xml:id"), s); 
           }
         }
       }
     }
   }
-  
+
+  println(stranke.size());
 }
 
 void draw() {
