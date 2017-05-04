@@ -1,3 +1,7 @@
+
+HashMap<String, PStranka> stranke;
+HashMap<String, Politik> politiki;
+
 class PStranka {
   String ime;
   String kratica_imena;
@@ -38,6 +42,7 @@ class PStranka {
 
 
 class Politik {
+  String id;
   String ime;
   String priimek;
   String datum_rojstva;
@@ -45,7 +50,7 @@ class Politik {
   String kraj_rojstva;
   String drzava_rojstva;
   PStranka stranka;
-  
+  XML XMLperson;
   public Politik() {
     stranka = null;
   }
@@ -58,22 +63,58 @@ class Politik {
     this.kraj_rojstva = kraj_rojstva;
     this.drzava_rojstva = drzava_rojstva;
     this.stranka = stranka;
+    this.id = this.get_id();
+  }
+  
+  public Politik(XML XMLdata){
+    this.XMLperson = XMLdata;
   }
   
   public String get_id() {
     return ime + priimek + datum_rojstva.substring(0, 4);
   }
+  
+  public String toString(){
+    return this.XMLperson.toString();
+  }
+ 
+}
+public boolean naloziPolitike(){
+    politiki = new  HashMap<String, Politik>();
+    Politik tmp = null;
+    XML xml = loadXML("SlovParl/SlovParl.xml");
+    
+    XML[] particDesc = xml.getChild("teiHeader").getChild("profileDesc").getChild("particDesc").getChildren("listPerson");
+    XML[] izvZako = particDesc[1].getChildren("person");
+    XML[] predstav =  particDesc[2].getChildren("person");;
+    
+  
+    for(XML person : izvZako) {
+      
+      tmp = new Politik(person);
+      System.out.println(tmp+"\n\n");
+      tmp.id = person.getString("xml:id");
+      politiki.put(tmp.id, tmp);
+    }
+    for(XML person : predstav) {
+      
+      tmp = new Politik(person);
+      tmp.id = person.getString("xml:id");
+      politiki.put(tmp.id, tmp);
+    }
+ 
+    return true;
 }
 
 
-HashMap<String, PStranka> stranke;
+
 
 void setup() {
   size(800, 600);
   background(250);
   
   XML xml = loadXML("SlovParl/SlovParl.xml");
-  
+  /*
   XML[] listi_organizacij = xml.getChild("teiHeader").getChild("profileDesc").getChild("particDesc").getChildren("listOrg");
   for(XML lo : listi_organizacij) {
     if(lo.getChild("head").getContent().equals("Seznam političnih organizacij v Sloveniji")) {
@@ -92,7 +133,9 @@ void setup() {
       }
     }
   }
+  */
   
+   if( naloziPolitike()) System.out.println("nalaganje politikov koncano!\nŠtevilo elementov: " + politiki.size());
 }
 
 void draw() {
