@@ -57,8 +57,8 @@ class Politik {
   }
  
 }
-public boolean naloziPolitike(boolean debug){
-    politiki = new  HashMap<String, Politik>();
+public boolean naloziPolitike(boolean debug, HashMap<String, PStranka> stranke){
+    neuvrsceno = new  HashMap<String, Politik>();
     Politik tmp = null;
     XML xml = loadXML("SlovParl/SlovParl.xml");
     
@@ -68,24 +68,52 @@ public boolean naloziPolitike(boolean debug){
     
   
     for(XML person : izvZako) {
-      
       tmp = new Politik(person);
       if(debug)System.out.println(tmp+"\n\n");
       tmp.id = person.getString("xml:id");
-      politiki.put(tmp.id, tmp);
+         
+      for(XML affil : person.getChildren("affiliation")){
+        String ref = affil.getString("ref");
+        if( ref != null){
+         
+          if(stranke.containsKey(ref)){
+             if(debug ||true )println("Politik ima stranko: " + ref ); 
+            stranke.get(ref).politiki.put(tmp.id, tmp);
+          }else{
+             neuvrsceno.put(tmp.id, tmp);
+          }
+        }
+      
+      }
+      
+      
     }
     for(XML person : predstav) {
-      
       tmp = new Politik(person);
       if(debug)System.out.println(tmp+"\n\n");
       tmp.id = person.getString("xml:id");
-      politiki.put(tmp.id, tmp);
+      
+      
+      for(XML affil : person.getChildren("affiliation")){
+        String ref = affil.getString("ref");
+        if( ref != null){
+          
+          if(stranke.containsKey(ref)){
+            if(debug ||true )println("Politik ima stranko: " + ref ); 
+            stranke.get(ref).politiki.put(tmp.id, tmp);
+          }else{
+            neuvrsceno.put(tmp.id, tmp);
+          }
+        }
+      
+      }
+ 
     }
  
     return true;
 }
 
-HashMap<String, Politik> politiki;
+HashMap<String, Politik> neuvrsceno;
 HashMap<String, PStranka> stranke;
 
 void setup() {
@@ -113,7 +141,7 @@ void setup() {
   }
 
   println("število strank:" + stranke.size());
-  if( naloziPolitike(false)) System.out.println("nalaganje politikov koncano!\nŠtevilo elementov: " + politiki.size());
+  if( naloziPolitike(false,stranke)) System.out.println("nalaganje politikov koncano!\nŠtevilo neuvrščenih elementov: " + neuvrsceno.size());
 }
 
 void draw() {
