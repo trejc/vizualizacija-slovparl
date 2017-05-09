@@ -29,6 +29,12 @@ static class Politik {
   String drzava_rojstva;
   PStranka stranka;
   XML XMLperson;
+
+  //hashmap <idSeje, <štSeje,<datumSeje, [kumulativaBesedDoDatuma, besedeTeSeje] >
+  HashMap<String, HashMap<int, HashMap <String, Long[]> > > ŠtBesedNaSejo;
+
+  long kumulativaBesedDoDatuma = 0;
+
   public Politik() {
     stranka = null;
   }
@@ -46,6 +52,7 @@ static class Politik {
   
   public Politik(XML XMLdata){
     this.XMLperson = XMLdata;
+    ŠtBesedNaSejo = new HashMap<String, HashMap<int, HashMap <String, Long[]> > >();
   }
   
   public String get_id() {
@@ -54,8 +61,7 @@ static class Politik {
   
   public String toString(){
     return this.XMLperson.toString();
-  }
-  
+  } 
 
   public static void uvrstiVStranko(XML person,  HashMap<String, PStranka> stranke, HashMap<String, Politik> politiki){
       Politik tmp = new Politik(person);
@@ -74,7 +80,8 @@ static class Politik {
             
           }
       }
-    }
+
+  }
 
   public static boolean naloziPolitike(XML xml, HashMap<String, PStranka> stranke, HashMap<String, Politik> politiki){
       politiki = new  HashMap<String, Politik>();
@@ -99,9 +106,16 @@ static class Politik {
       return true;
   }
 
+  public static boolean prestejBesede(XML seja, HashMap<String, Politik> politiki){
+     //V XML 'seja' so vsi govori seje. Pojdi skozi vse govore, preštej besede in 
+     //jih dodaj politiku pod štSeje,DatumSeje.
+     //Predpostavi, da se metoda kliče datumsko naraščajoče
+  
+  }
+
 }
 
-
+ 
   
 
 HashMap<String, Politik> politiki;
