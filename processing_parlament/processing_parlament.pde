@@ -43,9 +43,9 @@ static class Politik {
   PStranka stranka;
   XML XMLperson;
 
-  //hashmap <datumSeje,<štSeje, [kumulativaBesedDoDatuma, besedeTeGaGovora] >
-  HashMap<String, HashMap<String, Long[]> >  StBesedNaSejo;
-
+  //hashmap <datumSeje-štSeje, [kumulativaBesedDoDatuma, besedeTeGaGovora] >
+  HashMap<String, Long[]>  StBesedNaSejo;
+  SortedSet<String> UrejeniDatumi = null;
   long kumulativaBesedDoDatuma = 0;
 
   public Politik() {
@@ -65,7 +65,7 @@ static class Politik {
   
   public Politik(XML XMLdata){
     this.XMLperson = XMLdata;
-    StBesedNaSejo = new HashMap<String, HashMap <String, Long[]> > ();
+    StBesedNaSejo = new HashMap<String,  Long[]>  ();
   }
   
   public String get_id() {
@@ -172,16 +172,10 @@ static class Politik {
       if(govorec == null){
         continue;
       }
-
-      //hashmap < datumSeje,<štSeje, [kumulativaBesedDoDatuma, besedeTeGaGovora] >>
-      stNaDatum = new HashMap<String, Long[]>();
       Long[] stBesed = {govorec.kumulativaBesedDoDatuma, lokKum};
-      stNaDatum.put(stSeje, stBesed);
-      govorec.StBesedNaSejo.put(datum, stNaDatum);
-      govorec.kumulativaBesedDoDatuma += lokalnaKumulativa.get(key);
+      govorec.StBesedNaSejo.put(datum+"-"+stSeje, stBesed);
+      govorec.kumulativaBesedDoDatuma += lokKum;
 
-      //println(key+": " + lokKum);
-      //println(key+": " +  Arrays.toString(govorec.StBesedNaSejo.get(datum).get(stSeje)));
     }
     /*
       Konec datuma, naslednja datoteka je naslednji datum
@@ -190,13 +184,23 @@ static class Politik {
 
   }
 
-  public dobiStevilaBesedPoDatumu(){
+  public void izpisiStevilaBesedPoDatumu(){
     /*
-      Naredi tabelo [Datum, stKumulativnihBesed, StBesedSeje] in ga vrni
-      
-    */
+      Izpiši tabelo [Datum, stKumulativnihBesed, StBesedSeje] in ga vrni
 
-    println("Ta funkcija še ne dela");
+    */
+    //hashmap <datumSeje,<štSeje, [kumulativaBesedDoDatuma, besedeTeGaGovora] >
+    //HashMap<String, Long[]> >  StBesedNaSejo
+    println(""+this.id);
+    if(this.UrejeniDatumi == null) return;
+    for (String datum : this.UrejeniDatumi) { 
+      Long[] stB = StBesedNaSejo.get(datum);
+      println("  ["+ datum + ", " + stB[0] + ", " + stB[1] + "]" );
+      
+    }
+ 
+    println("==========================\n");
+ 
   }
 
 }
@@ -358,14 +362,26 @@ public void preberiSeje(){
 
 
   }
+  for(String key : politiki.keySet()){
+       politiki.get(key).UrejeniDatumi = new TreeSet<String>(politiki.get(key).StBesedNaSejo.keySet());
+  }
+ 
+
   println("done");
 }
 
-  
+public void testStevilaBesed(){
+
+    for(String key : politiki.keySet()){
+      politiki.get(key).izpisiStevilaBesedPoDatumu();
+      stVnosovDatumov += politiki.get(key).StBesedNaSejo.size();
+    }
+}
 
 HashMap<String, Politik> politiki;
 HashMap<String, PStranka> stranke;
- 
+
+long stVnosovDatumov = 0;
 
 void setup() {
   size(800, 600);
@@ -404,6 +420,11 @@ void setup() {
     println(e);
   }
   
+  testStevilaBesed();
+  long preracVelikost = stVnosovDatumov * Long.BYTES *2 /*to sta longa */ + stVnosovDatumov * 15 /*to so pa datum-stseje*/;
+  println("stVnosov števila besed: " + stVnosovDatumov +" >> " +preracVelikost+ "B");
+  
+
 }
 
 void draw() {
