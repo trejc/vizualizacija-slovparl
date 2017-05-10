@@ -365,23 +365,43 @@ class Graph {
 }
 
 
-class PStranka {
+static class PStranka {
   XML[] orgNames;
   HashMap<String, Politik> politiki;
-  
+  //<datum-stseje,<beseda, stPonovitev>>
+  HashMap<String, HashMap<String,Integer>> besede;
+
   public PStranka() {
     politiki = new HashMap<String, Politik>();
+    besede = new HashMap<String, HashMap<String,Integer>>();
   }
   
   public PStranka(XML[] orgNames) {
     this.orgNames = orgNames;
-    
+    besede = new HashMap<String, HashMap<String,Integer>>();
     politiki = new HashMap<String, Politik>();
   }
   
   public void dodaj_podatke_iz_xml(XML xml) {
     this.orgNames = xml.getChildren("orgName");
   }
+
+  public void obdelajBesedo(String datum_Seja, String normiranaBeseda){
+      println("Obdelava besede: "+ normiranaBeseda);
+      if(!besede.containsKey(datum_Seja)){
+        //za ta datum-štSeje še ni bilo nobene besede
+        HashMap<String,Integer> trBeseda = new HashMap<String,Integer>();
+        trBeseda.put(normiranaBeseda, 1);
+      }else if(! besede.get(datum_Seja).containsKey(normiranaBeseda)){
+        //za ta datum-štSeje že so besede, samo 'normiranaBeseda' se je zgodila 
+        //prvič
+        besede.get(datum_Seja).put(normiranaBeseda, 1);
+      }else{
+        //beseda se je za ta datum-štSeje že pojavila
+         besede.get(datum_Seja).put(normiranaBeseda,  besede.get(datum_Seja).get(normiranaBeseda) + 1);
+      }
+  }
+
 }
 
 
@@ -417,10 +437,19 @@ static class Politik {
   }
   
   public Politik(XML XMLdata){
+    this.stranka = null;
     this.XMLperson = XMLdata;
     StBesedNaSejo = new HashMap<String,  Long[]>  ();
   }
   
+  public static class ImaZeStrankoException extends Exception{
+    static long stNapak = 0;
+    public ImaZeStrankoException(String msg){
+      super(msg);
+      stNapak++;
+    }
+  }
+
   public String get_id() {
     return ime + priimek + datum_rojstva.substring(0, 4);
   }
@@ -429,19 +458,19 @@ static class Politik {
     return this.XMLperson.toString();
   } 
 
-  public static void uvrstiVStranko(XML person,  HashMap<String, PStranka> stranke, HashMap<String, Politik> politiki){
+  public static void uvrstiVStranko(XML person,  HashMap<String, PStranka> stranke, HashMap<String, Politik> politiki) throws ImaZeStrankoException{
       Politik tmp = new Politik(person);
       tmp.id = person.getString("xml:id");
       for(XML affil : person.getChildren("affiliation")){
           String ref = affil.getString("ref");
-          
+          //---> To še poglej if(tmp.stranka != null) throw new Politik.ImaZeStrankoException("Politik " + tmp.id + " že ima stranko!");
           if( ref != null){
             ref = ref.substring(1,ref.length());
-            println("REF: " + ref ); 
+            //println("REF: " + ref ); 
             if(stranke.containsKey(ref)){
-              
-              stranke.get(ref).politiki.put(tmp.id, tmp);
-              
+              tmp.stranka = stranke.get(ref);
+              tmp.stranka.politiki.put(tmp.id, tmp);
+               
             }
             politiki.put(tmp.id, tmp); //vsi politiki, tudi ti ki niso v strankah
           }
@@ -458,16 +487,24 @@ static class Politik {
       XML[] izvZako = particDesc[1].getChildren("person");
       XML[] predstav =  particDesc[2].getChildren("person");;
       
+     
+        for(XML person : izvZako) {
+          try{
+            Politik.uvrstiVStranko(  person,    stranke, politiki);
+          }catch (Exception e) {
+            //e.printStackTrace();
+          }
+          
+        }
+        for(XML person : predstav) {
+          try{
+            Politik.uvrstiVStranko(  person,    stranke, politiki);
+          }catch (Exception e) {
+            //e.printStackTrace();
+          }
     
-      for(XML person : izvZako) {
-        Politik.uvrstiVStranko(  person,    stranke, politiki);
-        
-        
-      }
-      for(XML person : predstav) {
-        Politik.uvrstiVStranko(  person,    stranke, politiki);
-  
-      }
+        }
+      
   
       return true;
   }
@@ -502,10 +539,14 @@ static class Politik {
            for(XML s : u.getChildren("s")){
              XML[] wr = s.getChildren("w");
              besedeTeGaGovora+= wr.length;
-            // for (XML w : wr) print (w.getContent() + " ");
-             //println();
+             for(XML w: wr){
+               //za vsako besedo govora
+               PStranka tStr =  politiki.get(who).stranka;
+               tStr.obdelajBesedo(datum+"-"+stSeje, w.getString("lemma"));
+
+             }
            }
-           //println(who + ", Besed: " + besedeTeGaGovora);
+          
            if(! lokalnaKumulativa.containsKey(who)){
               lokalnaKumulativa.put(who, besedeTeGaGovora);
           }else{
@@ -635,6 +676,11 @@ void setup() {
   println("število strank:" + stranke.size());
 
   if( Politik.naloziPolitike(xml,stranke,politiki)) System.out.println("nalaganje politikov koncano!\nŠtevilo neuvrščenih elementov: " + politiki.size());
+  if(Politik.ImaZeStrankoException.stNapak > 0){ 
+    println("št politikov z več strankami: " + Politik.ImaZeStrankoException.stNapak);
+    //double a = 1/0;
+  }
+  
   try{
      preberiSeje();
   }catch (Exception e) {
@@ -642,6 +688,7 @@ void setup() {
     println(e);
   }
   
+
   testStevilaBesed();
   long preracVelikost = stVnosovDatumov * Long.BYTES *2 + stVnosovDatumov * 15;
   println("stVnosov števila besed: " + stVnosovDatumov +" >> " +preracVelikost+ "B");
