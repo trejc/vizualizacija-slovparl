@@ -159,10 +159,10 @@ class DatumSlider {
     ratio = (float)sw / (float)widthtoheight;
     xpos = xp;
     ypos = yp-sheight/2;
-    spos = xpos + swidth/2 - sheight/2;
+    spos = xpos;
     newspos = spos;
     sposMin = xpos;
-    sposMax = xpos + swidth - sheight;
+    sposMax = xpos + swidth - sheight/2;
     loose = l;
   }
 
@@ -171,9 +171,6 @@ class DatumSlider {
       over = true;
     } else {
       over = false;
-    }
-    if (mousePressed && over) {
-      locked = true;
     }
     if (!mousePressed) {
       locked = false;
@@ -199,21 +196,27 @@ class DatumSlider {
     }
   }
 
-  void render(Camera cam) {
-    fill(204);
-    rect(xpos/cam.zoom - cam.x/cam.zoom, ypos/cam.zoom - cam.y/cam.zoom, swidth/cam.zoom, sheight/cam.zoom);
+  void render(String datum) {
+    fill(255);
+    stroke(0);
+    rect(xpos, ypos + 6, swidth, sheight - 12);
     if (over || locked) {
-      fill(0, 0, 0);
+      fill(75);
     } else {
-      fill(102, 102, 102);
+      fill(200);
     }
-    rect(spos/cam.zoom - cam.x/cam.zoom, ypos/cam.zoom - cam.y/cam.zoom, sheight/cam.zoom, sheight/cam.zoom);
+    rect(spos, ypos, sheight/2, sheight);
+    fill(255);
+    textSize(12);
+    text(datum, spos - textWidth(datum)/2, ypos + 35);
   }
 
   float getPos() {
-    // Convert spos to be values between
-    // 0 and the total width of the scrollbar
     return spos * ratio;
+  }
+  
+  float getProc() {
+    return (this.getPos() - this.xpos) / (swidth + sheight);
   }
 }
 
@@ -272,6 +275,7 @@ class Node {
   float radius;
   PStranka data;
   ArrayList<Edge> edges;
+  boolean drawable;
   
   public Node(float x, float y, PStranka s) {
     this.x = x;
@@ -295,18 +299,30 @@ class Node {
   }
   
   public void shift(float dx, float dy) {
-    x += (dx * 0.2f);
-    y += (dy * 0.2f);
+    x += (dx * 0.4f);
+    y += (dy * 0.4f);
   }
   
-  void render(Camera cam) {
-    ellipseMode(RADIUS);
-    fill(255,255,255);
-    print(cam.x + " " + cam.y + "\n");
-    ellipse(x, y, radius, radius);
-    fill(0,0,0);
-    String s = "SZBC";
-    text(s, (x - textWidth(s)/2), (y + textAscent()/2));
+  void render(Camera cam, String datum) {
+    String s;
+    if(cam.zoom < 2.0f) {
+      s = data.imeStranke("init", datum);
+      textSize(14);
+    }else {
+      s = data.imeStranke("yes", datum);
+      textSize(6);
+    }
+    
+    if(s != null) {
+      drawable = true;
+      ellipseMode(RADIUS);
+      fill(255,255,255);
+      ellipse(x, y, radius, radius);
+      fill(0,0,0);
+      text(s, (x - textWidth(s)/2), (y + textAscent()/2));
+    }else {
+      drawable = false;
+    }
   }
 }
 
@@ -333,7 +349,7 @@ class Graph {
       n1 = nodes.get(i);
       for(int j = 0; j < nodes.size(); j++) {
         n2 = nodes.get(j);
-        if(i != j && n1.isOverlapping(n2, minDistance)) {
+        if(i != j && n1.isOverlapping(n2, minDistance) && n1.drawable && n2.drawable) {
           v1 = new PVector(n1.x, n1.y);
           v2 = new PVector(n2.x, n2.y);
           
@@ -438,7 +454,64 @@ static class PStranka {
         e.printStackTrace();
       } 
   }
-
+  
+  public String imeStranke(String full, String datum) { 
+    int leto = Integer.parseInt(datum.substring(0, 4));
+    int mesec = Integer.parseInt(datum.substring(5, 7));
+    int dan = Integer.parseInt(datum.substring(8));
+    
+    for(XML orgName : orgNames) {
+      if(orgName.getString("full") != null) {
+        if(orgName.getString("full").equals(full)) {
+          if(orgName.getString("from") != null) {
+            String from_datum = orgName.getString("from");
+            int from_leto = Integer.parseInt(from_datum.substring(0, 4));
+            int from_mesec = Integer.parseInt(from_datum.substring(5, 7));
+            int from_dan = from_datum.length() > 8 ? Integer.parseInt(from_datum.substring(8)) : 1;
+            
+            if(from_leto < leto) {
+              return orgName.getContent();
+            }else if(from_leto == leto) {
+              if(from_mesec < mesec) {
+                return orgName.getContent();
+              }else if(from_mesec == mesec) {
+                if(from_dan < dan) {
+                  return orgName.getContent();
+                }
+              }
+            }
+          }else if(orgName.getString("to") != null) {
+            String to_datum = orgName.getString("to");
+            int to_leto = Integer.parseInt(to_datum.substring(0, 4));
+            int to_mesec = Integer.parseInt(to_datum.substring(5, 7));
+            int to_dan = to_datum.length() > 8 ? Integer.parseInt(to_datum.substring(8)) : 1;
+            
+            if(to_leto > leto) {
+              return orgName.getContent();
+            }else if(to_leto == leto) {
+              if(to_mesec > mesec) {
+                return orgName.getContent();
+              }else if(to_mesec == mesec) {
+                if(to_dan > dan) {
+                  return orgName.getContent();
+                }
+              }
+            }
+          }else {
+            return orgName.getContent();
+          }
+        }
+      }else {
+        if(full.equals("init")) {
+          return orgName.getParent().getString("xml:id").substring(3);
+        }else {
+          return orgName.getContent();
+        }
+      }
+    }
+    
+    return null;
+  }
 }
 
 
@@ -696,6 +769,8 @@ public void testStevilaBesed(){
 
 HashMap<String, Politik> politiki;
 HashMap<String, PStranka> stranke;
+ArrayList<String> datumi;
+String datum_prikaza;
 Camera camera;
 Graph graph;
 DatumSlider slider;
@@ -704,12 +779,22 @@ long stVnosovDatumov = 0;
 
 void setup() {
   size(800, 600);
-  background(250);
   stranke = new HashMap<String, PStranka>();
   politiki = new  HashMap<String, Politik>();
+  datumi = new ArrayList<String>();
   camera = new Camera(0.0, 0.0);
   graph = new Graph();
-  slider = new DatumSlider(200, 50, 300, 20, 1);
+  slider = new DatumSlider(50, 20, 700, 20, 6);
+  
+  String prev_datum = null;
+  for(String file : getFileNames()) {
+    String datum = file.substring(0, 10);
+    if(prev_datum == null || !datum.equals(prev_datum)) {
+      datumi.add(datum);
+    }
+    
+    prev_datum = datum;
+  }
 
   XML xml = loadXML("SlovParl/SlovParl.xml");
   
@@ -786,7 +871,9 @@ static void CRASH_APP(){
 }
 
 void update() {
-  graph.separateNodes(50);
+  graph.separateNodes(100);
+  slider.update();
+  datum_prikaza = datumi.get(int(slider.getProc() * datumi.size()));
 }
 
 void draw() {
@@ -796,18 +883,16 @@ void draw() {
   translate(camera.x, camera.y);
   scale(camera.zoom);
   
-  background(245,245,245);
+  background(105);
   noStroke();
   smooth();
   
   for(Node n : graph.nodes) {
-    n.render(camera);
+    n.render(camera, datum_prikaza);
   }
   
-  slider.update();
-  slider.render(camera);
-  
   popMatrix();
+  slider.render(datum_prikaza);
 }
 
 void mouseWheel(MouseEvent event) {
@@ -819,6 +904,11 @@ void mouseWheel(MouseEvent event) {
   camera.y *= delta;
   camera.x += mouseX;
   camera.y += mouseY;
+}
+
+void mousePressed() {
+  if(slider.overEvent())
+    slider.locked = true;
 }
 
 void mouseDragged(MouseEvent event) {
