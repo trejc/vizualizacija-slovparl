@@ -370,7 +370,7 @@ static class PStranka {
   HashMap<String, Politik> politiki;
   //<datum-stseje,<beseda, stPonovitev>>
   HashMap<String, HashMap<String,Integer>> besede;
-
+  String id;
   public PStranka() {
     politiki = new HashMap<String, Politik>();
     besede = new HashMap<String, HashMap<String,Integer>>();
@@ -384,22 +384,52 @@ static class PStranka {
   
   public void dodaj_podatke_iz_xml(XML xml) {
     this.orgNames = xml.getChildren("orgName");
+
+  }
+  public String getID(){
+    if(this.id != null) return this.id;
+    else return "stranka nima IDja";
   }
 
-  public void obdelajBesedo(String datum_Seja, String normiranaBeseda){
-      println("Obdelava besede: "+ normiranaBeseda);
-      if(!besede.containsKey(datum_Seja)){
-        //za ta datum-štSeje še ni bilo nobene besede
-        HashMap<String,Integer> trBeseda = new HashMap<String,Integer>();
-        trBeseda.put(normiranaBeseda, 1);
-      }else if(! besede.get(datum_Seja).containsKey(normiranaBeseda)){
-        //za ta datum-štSeje že so besede, samo 'normiranaBeseda' se je zgodila 
-        //prvič
-        besede.get(datum_Seja).put(normiranaBeseda, 1);
-      }else{
-        //beseda se je za ta datum-štSeje že pojavila
-         besede.get(datum_Seja).put(normiranaBeseda,  besede.get(datum_Seja).get(normiranaBeseda) + 1);
+  static int zanimivaBesednaZveza = 0;
+  static String bZ = "";
+  public void obdelajBesedo(String datum_Seja, String normiranaBeseda, String beseda ){
+      //println("Obdelava besede: "+ normiranaBeseda);
+      if(zanimivaBesednaZveza > 0){
+        bZ+= " "+ beseda;
+        zanimivaBesednaZveza--;
+      }else if(!bZ.equals("")) {
+        zanimivaBesednaZveza = -1;
+        println(bZ);
+        bZ = "";
       }
+      if(normiranaBeseda.length() <= 3 ) return;
+      if(normiranaBeseda.equals("biti")) return;
+      if(normiranaBeseda.equals("proti") && zanimivaBesednaZveza != -1) {
+        bZ+="****ZANIMIVA BES ZVEZA:>>>>>" +datum_Seja +": "+ beseda;
+        zanimivaBesednaZveza = 5;
+      }else if ( zanimivaBesednaZveza == -1)  zanimivaBesednaZveza = 0;
+     
+      try{
+        if(!this.besede.containsKey(datum_Seja)){
+          //za ta datum-štSeje še ni bilo nobene besede
+         // println("[obdelajBesedo] datum " +datum_Seja + "še ni v bazi 'besede'" );
+          HashMap<String,Integer> trBeseda = new HashMap<String,Integer>();
+          trBeseda.put(normiranaBeseda, 1);
+          this.besede.put(datum_Seja, trBeseda);
+        }else if(! besede.get(datum_Seja).containsKey(normiranaBeseda)){
+          //za ta datum-štSeje že so besede, samo 'normiranaBeseda' se je zgodila 
+          //prvič
+         // println("[obdelajBesedo] besede " +normiranaBeseda + "še ni v bazi 'besede' za datum " + datum_Seja );
+          besede.get(datum_Seja).put(normiranaBeseda, 1);
+        }else{
+          //beseda se je za ta datum-štSeje že pojavila
+          besede.get(datum_Seja).put(normiranaBeseda,  besede.get(datum_Seja).get(normiranaBeseda) + 1);
+        }
+      }catch(Exception e){
+        println("error [obdelajBesedo]  ob klicu " +datum_Seja + ", " + normiranaBeseda +" this.besede= " + this.besede);
+        e.printStackTrace();
+      } 
   }
 
 }
@@ -455,7 +485,7 @@ static class Politik {
   }
   
   public String toString(){
-    return this.XMLperson.toString();
+    return this.id;
   } 
 
   public static void uvrstiVStranko(XML person,  HashMap<String, PStranka> stranke, HashMap<String, Politik> politiki) throws ImaZeStrankoException{
@@ -492,7 +522,7 @@ static class Politik {
           try{
             Politik.uvrstiVStranko(  person,    stranke, politiki);
           }catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
           }
           
         }
@@ -500,7 +530,7 @@ static class Politik {
           try{
             Politik.uvrstiVStranko(  person,    stranke, politiki);
           }catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
           }
     
         }
@@ -528,7 +558,7 @@ static class Politik {
     println("DATUM: " + datum + ", StSeje: " + stSeje);
     //      <IDpolitika, stBesedSeje>
     HashMap<String, Long> lokalnaKumulativa = new HashMap<String, Long>();
-
+     
     for(XML sp: sejaBody.getChildren("div")){
       
       if(XMLUtils.a_type(sp,"sp")){
@@ -539,12 +569,26 @@ static class Politik {
            for(XML s : u.getChildren("s")){
              XML[] wr = s.getChildren("w");
              besedeTeGaGovora+= wr.length;
-             for(XML w: wr){
-               //za vsako besedo govora
-               PStranka tStr =  politiki.get(who).stranka;
-               tStr.obdelajBesedo(datum+"-"+stSeje, w.getString("lemma"));
+             
+            for(XML w: wr){
+              //za vsako besedo govora
+              try{
+              Politik tmp1 = politiki.get(who);
+              if(tmp1 != null){
+                 PStranka tStr =  tmp1.stranka;
+                 if(tStr != null){
+                    tStr.obdelajBesedo(datum+"-"+stSeje, w.getString("lemma"), w.getContent());
+                 }
+                 
 
-             }
+              }
+              }catch(Exception e) {
+                println("error [obdelajBesedo]  ob klicu " + " who: " + who);
+                e.printStackTrace();
+                 
+              }
+            } 
+             
            }
           
            if(! lokalnaKumulativa.containsKey(who)){
@@ -555,22 +599,20 @@ static class Politik {
          }
       }
     }
+     
     HashMap<String, Long[]> stNaDatum = null;
     Politik govorec = null;
     long lokKum = 0;
     for(String key : lokalnaKumulativa.keySet()){
-       
       lokKum = lokalnaKumulativa.get(key);
-      
       govorec = politiki.get(key);
-      if(govorec == null){
-        continue;
+      if(govorec != null){
+        Long[] stBesed = {govorec.kumulativaBesedDoDatuma, lokKum}; 
+        govorec.StBesedNaSejo.put(datum+"-"+stSeje, stBesed);
+        govorec.kumulativaBesedDoDatuma += lokKum;
       }
-      Long[] stBesed = {govorec.kumulativaBesedDoDatuma, lokKum};
-      govorec.StBesedNaSejo.put(datum+"-"+stSeje, stBesed);
-      govorec.kumulativaBesedDoDatuma += lokKum;
-
     }
+    
     /*
       Konec datuma, naslednja datoteka je naslednji datum
     */
@@ -585,8 +627,12 @@ static class Politik {
     */
     //hashmap <datumSeje,<štSeje, [kumulativaBesedDoDatuma, besedeTeGaGovora] >
     //HashMap<String, Long[]> >  StBesedNaSejo
-    println(""+this.id);
-    if(this.UrejeniDatumi == null) return;
+    
+    if(this.UrejeniDatumi == null ) return;
+    print(""+this.id + ";  stranka: ");
+    if(this.stranka != null) println(this.stranka.getID());
+    else println("Oseba nima stranke");
+
     for (String datum : this.UrejeniDatumi) { 
       Long[] stB = StBesedNaSejo.get(datum);
       println("  ["+ datum + ", " + stB[0] + ", " + stB[1] + "]" );
@@ -614,9 +660,13 @@ public void preberiSeje(){
 
     XML xml = loadXML(folderPath+"/"+imenaDatotek[i]);
     XML body = xml.getChild("text").getChild("body");
- 
+    try{
+
     Politik.prestejBesede(body, imenaDatotek[i].substring(0,10), imenaDatotek[i].substring(imenaDatotek[i].length()-11,imenaDatotek[i].length()-7), politiki);
 
+    }catch (Exception e) {
+      e.printStackTrace();
+    }
 
   }
   for(String key : politiki.keySet()){
@@ -665,6 +715,7 @@ void setup() {
             PStranka s = new PStranka();
             s.dodaj_podatke_iz_xml(stranka);
             stranke.put(stranka.getString("xml:id"), s);
+            s.id = stranka.getString("xml:id");
             graph.nodes.add(new Node(300.0f + (float)Math.random()*5.0f, 300.0f + (float)Math.random()*5.0f, s));
           }
         }
@@ -685,13 +736,31 @@ void setup() {
      preberiSeje();
   }catch (Exception e) {
     e.printStackTrace();
-    println(e);
+    
   }
   
 
   testStevilaBesed();
+  //besede po strankah
+  for(String stra1: stranke.keySet()){
+     println("[BESEDE] "+ stra1+":");
+    for(String datum: stranke.get(stra1).besede.keySet()){
+      print(" ["+datum+"]");
+      for(String beseda: stranke.get(stra1).besede.get(datum).keySet()){
+        println("---["+ beseda +", "+  stranke.get(stra1).besede.get(datum).get(beseda)+"]");
+      }
+    }
+  }
+
+
   long preracVelikost = stVnosovDatumov * Long.BYTES *2 + stVnosovDatumov * 15;
   println("stVnosov števila besed: " + stVnosovDatumov +" >> " +preracVelikost+ "B");
+
+  CRASH_APP();
+}
+
+static void CRASH_APP(){
+  double a = 1/0;
 }
 
 void update() {
