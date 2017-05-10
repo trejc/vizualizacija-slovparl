@@ -408,6 +408,11 @@ static class PStranka {
     else return "stranka nima IDja";
   }
 
+  public HashMap<String, Integer> besedeNaDatum(String datum){
+
+    return this.besede.get(datum);
+  }
+
   static int zanimivaBesednaZveza = 0;
   static String bZ = "";
   static HashMap<String, Integer> zanimiveBesede = new HashMap<String, Integer> ();
@@ -415,7 +420,7 @@ static class PStranka {
   static void zanimivo(String beseda){
     PStranka.zanimiveBesede.put(beseda, 1);
   }
-  public void obdelajBesedo(String datum_Seja, String normiranaBeseda, String beseda ){
+  public void obdelajBesedo(String datum, String normiranaBeseda, String beseda ){
       //println("Obdelava besede: "+ normiranaBeseda);
       if(zanimivaBesednaZveza > 0){
         bZ+= " "+ beseda;
@@ -428,29 +433,29 @@ static class PStranka {
       if(normiranaBeseda.length() <= 3 ) return;
       if(normiranaBeseda.equals("biti")) return;
       if(normiranaBeseda.equals("proti") && zanimivaBesednaZveza != -1) {
-        bZ+="****ZANIMIVA BES ZVEZA:>>>>>" +datum_Seja +": "+ beseda;
+        bZ+="****ZANIMIVA BES ZVEZA:>>>>>" +datum +": "+ beseda;
         zanimivaBesednaZveza = 5;
       }else if ( zanimivaBesednaZveza == -1)  zanimivaBesednaZveza = 0;
      
       if(! (PStranka.zanimiveBesede.containsKey(normiranaBeseda) || normiranaBeseda.substring(normiranaBeseda.length()-3,normiranaBeseda.length()).equals("ost")) ) return;
       try{
-        if(!this.besede.containsKey(datum_Seja)){
-          //za ta datum-štSeje še ni bilo nobene besede
+        if(!this.besede.containsKey(datum)){
+          //za ta datum še ni bilo nobene besede
          // println("[obdelajBesedo] datum " +datum_Seja + "še ni v bazi 'besede'" );
           HashMap<String,Integer> trBeseda = new HashMap<String,Integer>();
           trBeseda.put(normiranaBeseda, 1);
-          this.besede.put(datum_Seja, trBeseda);
-        }else if(! besede.get(datum_Seja).containsKey(normiranaBeseda)){
+          this.besede.put(datum, trBeseda);
+        }else if(! besede.get(datum).containsKey(normiranaBeseda)){
           //za ta datum-štSeje že so besede, samo 'normiranaBeseda' se je zgodila 
           //prvič
          // println("[obdelajBesedo] besede " +normiranaBeseda + "še ni v bazi 'besede' za datum " + datum_Seja );
-          besede.get(datum_Seja).put(normiranaBeseda, 1);
+          besede.get(datum).put(normiranaBeseda, 1);
         }else{
           //beseda se je za ta datum-štSeje že pojavila
-          besede.get(datum_Seja).put(normiranaBeseda,  besede.get(datum_Seja).get(normiranaBeseda) + 1);
+          besede.get(datum).put(normiranaBeseda,  besede.get(datum).get(normiranaBeseda) + 1);
         }
       }catch(Exception e){
-        println("error [obdelajBesedo]  ob klicu " +datum_Seja + ", " + normiranaBeseda +" this.besede= " + this.besede);
+        println("error [obdelajBesedo]  ob klicu " +datum + ", " + normiranaBeseda +" this.besede= " + this.besede);
         e.printStackTrace();
       } 
   }
@@ -657,7 +662,7 @@ static class Politik {
               if(tmp1 != null){
                  PStranka tStr =  tmp1.stranka;
                  if(tStr != null){
-                    tStr.obdelajBesedo(datum+"-"+stSeje, w.getString("lemma"), w.getContent());
+                    tStr.obdelajBesedo(datum, w.getString("lemma"), w.getContent());
                  }
                  
 
