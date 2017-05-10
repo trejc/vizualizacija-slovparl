@@ -370,6 +370,7 @@ static class PStranka {
   HashMap<String, Politik> politiki;
   //<datum-stseje,<beseda, stPonovitev>>
   HashMap<String, HashMap<String,Integer>> besede;
+  SortedSet<String> UrejeniDatumiBesed = null;
   String id;
   public PStranka() {
     politiki = new HashMap<String, Politik>();
@@ -393,6 +394,11 @@ static class PStranka {
 
   static int zanimivaBesednaZveza = 0;
   static String bZ = "";
+  static HashMap<String, Integer> zanimiveBesede = new HashMap<String, Integer> ();
+
+  static void zanimivo(String beseda){
+    PStranka.zanimiveBesede.put(beseda, 1);
+  }
   public void obdelajBesedo(String datum_Seja, String normiranaBeseda, String beseda ){
       //println("Obdelava besede: "+ normiranaBeseda);
       if(zanimivaBesednaZveza > 0){
@@ -410,6 +416,7 @@ static class PStranka {
         zanimivaBesednaZveza = 5;
       }else if ( zanimivaBesednaZveza == -1)  zanimivaBesednaZveza = 0;
      
+      if(! (PStranka.zanimiveBesede.containsKey(normiranaBeseda) || normiranaBeseda.substring(normiranaBeseda.length()-3,normiranaBeseda.length()).equals("ost")) ) return;
       try{
         if(!this.besede.containsKey(datum_Seja)){
           //za ta datum-štSeje še ni bilo nobene besede
@@ -672,7 +679,9 @@ public void preberiSeje(){
   for(String key : politiki.keySet()){
        politiki.get(key).UrejeniDatumi = new TreeSet<String>(politiki.get(key).StBesedNaSejo.keySet());
   }
- 
+  for(String key : stranke.keySet()){
+       stranke.get(key).UrejeniDatumiBesed =  new TreeSet<String>(stranke.get(key).besede.keySet());
+  }
 
   println("done");
 }
@@ -732,6 +741,19 @@ void setup() {
     //double a = 1/0;
   }
   
+  PStranka.zanimivo("vojska");
+  PStranka.zanimivo("obramba");
+  PStranka.zanimivo("brezposelnost");
+  PStranka.zanimivo("banka");
+  PStranka.zanimivo("Jugoslavija");
+  PStranka.zanimivo("JNA");
+  PStranka.zanimivo("Armada");
+  PStranka.zanimivo("armada");
+  PStranka.zanimivo("JLA");
+  PStranka.zanimivo("ljudstvo");
+  PStranka.zanimivo("narod");
+  PStranka.zanimivo("sovražnik");
+
   try{
      preberiSeje();
   }catch (Exception e) {
@@ -744,19 +766,19 @@ void setup() {
   //besede po strankah
   for(String stra1: stranke.keySet()){
      println("[BESEDE] "+ stra1+":");
-    for(String datum: stranke.get(stra1).besede.keySet()){
+    for(String datum: stranke.get(stra1).UrejeniDatumiBesed){
       print(" ["+datum+"]");
       for(String beseda: stranke.get(stra1).besede.get(datum).keySet()){
-        println("---["+ beseda +", "+  stranke.get(stra1).besede.get(datum).get(beseda)+"]");
+        print("["+ beseda +", "+  stranke.get(stra1).besede.get(datum).get(beseda)+"] ");
       }
+      println();
     }
   }
 
 
   long preracVelikost = stVnosovDatumov * Long.BYTES *2 + stVnosovDatumov * 15;
   println("stVnosov števila besed: " + stVnosovDatumov +" >> " +preracVelikost+ "B");
-
-  CRASH_APP();
+ 
 }
 
 static void CRASH_APP(){
