@@ -383,7 +383,14 @@ class Graph {
 
 static class PStranka {
   XML[] orgNames;
+  
   HashMap<String, Politik> politiki;
+  //<datum-stseje,[štBesedDoDatuma, štBesedNaTaDatum]>
+  HashMap<String, Long[]> stBesed;
+   
+  long kumulativaBesed = 0;
+  //št besed prejšnega datuma
+  long besedePrejDatum = 0;
   //<datum-stseje,<beseda, stPonovitev>>
   HashMap<String, HashMap<String,Integer>> besede;
   SortedSet<String> UrejeniDatumiBesed = null;
@@ -391,12 +398,14 @@ static class PStranka {
   public PStranka() {
     politiki = new HashMap<String, Politik>();
     besede = new HashMap<String, HashMap<String,Integer>>();
+    stBesed = new HashMap<String, Long[]>();
   }
   
   public PStranka(XML[] orgNames) {
     this.orgNames = orgNames;
     besede = new HashMap<String, HashMap<String,Integer>>();
     politiki = new HashMap<String, Politik>();
+    stBesed = new HashMap<String, Long[]>();
   }
   
   public void dodaj_podatke_iz_xml(XML xml) {
@@ -432,7 +441,23 @@ static class PStranka {
       }
       if(normiranaBeseda.length() <= 3 ) return;
       if(normiranaBeseda.equals("biti")) return;
-      if(normiranaBeseda.equals("proti") && zanimivaBesednaZveza != -1) {
+      if(!stBesed.containsKey(datum)){
+        //Na ta datum še ni bilo besed!
+        //datumi gredo po vrsti!
+        //kumulativa besed = kumbesed + stbesed iz prejsnjega datuma
+        kumulativaBesed += besedePrejDatum;
+        Long[] tmp1 = {new Long(kumulativaBesed),new Long(1)};
+        besedePrejDatum = 1; //v primeru, da je samo 1 beseda na ta datum
+        stBesed.put(datum, tmp1);
+      }else{
+        //Na ta datum so že bile besede. Prištej to besedo
+        Long[] tmp1 = {new Long(kumulativaBesed),  stBesed.get(datum)[1] + new Long(1)};
+        //println(this.getID() +"], "+datum +" :  stBesed.get(datum)[1] :" + stBesed.get(datum)[1]);
+        besedePrejDatum = stBesed.get(datum)[1] + 1; 
+        stBesed.put(datum, tmp1);
+      }
+
+      if(normiranaBeseda.equals("proti") && zanimivaBesednaZveza != -1 && false) {
         bZ+="****ZANIMIVA BES ZVEZA:>>>>>" +datum +": "+ beseda;
         zanimivaBesednaZveza = 5;
       }else if ( zanimivaBesednaZveza == -1)  zanimivaBesednaZveza = 0;
@@ -857,14 +882,24 @@ void setup() {
   for(String stra1: stranke.keySet()){
      println("[BESEDE] "+ stra1+":");
     for(String datum: stranke.get(stra1).UrejeniDatumiBesed){
-      print(" ["+datum+"]");
-      for(String beseda: stranke.get(stra1).besede.get(datum).keySet()){
-        print("["+ beseda +", "+  stranke.get(stra1).besede.get(datum).get(beseda)+"] ");
+      
+      if(false){
+        for(String beseda: stranke.get(stra1).besede.get(datum).keySet()){
+          print("["+ beseda +", "+  stranke.get(stra1).besede.get(datum).get(beseda)+"] ");
+        }
       }
       println();
     }
   }
+  for(String stra1: stranke.keySet()){
+    for(String datum:  new TreeSet<String>(stranke.get(stra1).stBesed.keySet()) ){
+      print(" ["+datum+"]");
+      Long [] stBesed = stranke.get(stra1).stBesed.get(datum);
+      println("[" +stra1+"; STBESED: " + stBesed[0] +", " + stBesed[1]+"]; ");
 
+    }
+     
+  }
 
   long preracVelikost = stVnosovDatumov * Long.BYTES *2 + stVnosovDatumov * 15;
   println("stVnosov števila besed: " + stVnosovDatumov +" >> " +preracVelikost+ "B");
