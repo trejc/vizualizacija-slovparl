@@ -432,11 +432,136 @@ class Graph {
   }
 }
 
+static class BesFrek{
+  String beseda;
+  String datum;
+  long pojavitve;
+  long besDoDatuma;
+  
+  public BesFrek(String dat, long besDoDatuma1, String bs){
+    datum = dat;
+    besDoDatuma = besDoDatuma1;
+    beseda = bs;
+    pojavitve = 1;
+  }
+  public void povecaj(){
+    pojavitve++;
+  }
+  public String toString(){
+    return datum+", " + beseda + ", "+ besDoDatuma+", "+ pojavitve; 
+  }
+   
+}
+
+static class HrambaBesed{
+  String beseda;
+  HashMap<String, Long> vseBesedeNaDatum;
+  HashMap<String, Long> pojavitveBesedeNaDatum;
+
+  public HrambaBesed(String beseda,String datum){
+    this.beseda=beseda;
+    vseBesedeNaDatum = new HashMap<String, Long>();
+    pojavitveBesedeNaDatum = new HashMap<String, Long>();
+    dodajDatum(datum);
+    initVseBesede(datum);
+
+  }
+  public void dodajPojavitev(String datum){
+    povecajBesedeNaDatum(datum);
+    povecajPojavitev(datum);
+  }
+
+  public void dodajNovo(String datum){
+    dodajDatum(datum);
+    initVseBesede(datum);
+  }
+  public void povecajBesedeNaDatum(String datum){
+    vseBesedeNaDatum.put(datum, vseBesedeNaDatum.get(datum)+1);
+  }
+  public void povecajPojavitev(String datum){
+    pojavitveBesedeNaDatum.put(datum, pojavitveBesedeNaDatum.get(datum)+1);
+  }
+  public void dodajDatum(String datum){
+    vseBesedeNaDatum.put(datum, new Long(1));
+  }
+
+  public void initVseBesede(String datum){
+     vseBesedeNaDatum.put(datum, new Long(1));
+  }
+
+}
+ 
+static class GrupaBesed{
+  String labelGrupe;
+  int stevecBessed;
+  String prejDatum;
+  //      <datum, <beseda, stPojavitev> >
+  HashMap<String, HashMap<String, Integer> > besede;
+  public GrupaBesed(String label){
+    labelGrupe = label;
+    stevecBessed = 0;
+    besede = new HashMap<String, HashMap<String, Integer> >();
+    prejDatum = null;
+  }
+  public  HashMap<String, Integer> kopiraj(  HashMap<String, Integer> source){
+    HashMap<String, Integer> novHM = new   HashMap<String, Integer>();
+    for(String stBeseda : source.keySet){
+      novHM.put(stBeseda, source.get(stBeseda));
+    }
+    return novHM;
+  } 
+  public void setPrejDatum(String d){
+    prejDatum=d;
+  }
+  public boolean jeDatum(String datum){
+    return besede.containsKey(datum);
+  }
+  public boolean imaBesedo(String datum, String beseda){
+    return jeDatum(datum) && besede.get(datum).containsKey(beseda);
+  }
+  public void AddWord(String datum, String word){
+    if(imaBesedo(datum, word)){
+      //za datum obstaja beseda
+      int oldNum = besede.get(datum).get(word);
+      besede.get(datum).put(word, oldNum+1);
+      stevecBessed++;
+    }else if(jeDatum(datum){
+      //za datum ni besede -> še nikoli ni bila
+      besede.get(datum).put(word, 1);
+      stevecBessed++;
+    }else{
+      //ni datuma, postavi datum
+      if(prejDatum != null  && jeDatum(prejDatum)){
+        //obstaja prejšnji datum
+        HashMap<String, Integer> novDatum =  kopiraj(besede.get(prejDatum));
+        int oldNum = novDatum.get(word);
+        novDatum.put(word, oldNum+1);
+        stevecBessed++;
+        besede.put(datum, novDatum);
+        prejDatum = datum;
+      }else{
+        //prvič govorijo oz ni preš. datuma
+        HashMap<String, Integer> novDatum = new HashMap<String, Integer>();
+        novDatum.put(word, 1);
+        stevecBessed++;
+        besede.put(datum, novDatum);
+        prejDatum = datum;
+      }
+    }
+  }
+
+}
 
 static class PStranka {
   XML[] orgNames;
   
   HashMap<String, Politik> politiki;
+  //  <beseda, (beseda <datum,pojavitve> <datum, besedenadatum)>
+  HashMap<String, HrambaBesed> besedeStranke;
+
+  //<datum,<beseda, (datum, beseda, frekvencaBesede, vseBesede)> >
+  HashMap<String, HashMap<String,BesFrek> > frekvencaBesed;
+
   //<datum-stseje,[štBesedDoDatuma, štBesedNaTaDatum]>
   HashMap<String, Long[]> stBesed;
    
@@ -451,6 +576,8 @@ static class PStranka {
     politiki = new HashMap<String, Politik>();
     besede = new HashMap<String, HashMap<String,Integer>>();
     stBesed = new HashMap<String, Long[]>();
+    frekvencaBesed = new HashMap<String, HashMap<String,BesFrek> >();
+    besedeStranke = new HashMap<String, HrambaBesed>();
   }
   
   public HashMap<String, Integer> besedeNaDatum(String datum){
@@ -462,6 +589,8 @@ static class PStranka {
     besede = new HashMap<String, HashMap<String,Integer>>();
     politiki = new HashMap<String, Politik>();
     stBesed = new HashMap<String, Long[]>();
+    frekvencaBesed = new HashMap<String, HashMap<String,BesFrek> >();
+    besedeStranke = new HashMap<String, HrambaBesed>();
   }
   
   public void dodaj_podatke_iz_xml(XML xml) {
@@ -476,6 +605,17 @@ static class PStranka {
     Long[] tmp = stBesed.get(datum);
     return new long[]{tmp[0], tmp[1]};
   }
+  public SortedSet<String> vsiDatumiBesed(){
+    return new TreeSet<String>(frekvencaBesed.keySet());
+  }
+  public SortedSet<String> vseBesedeNaDatum(String datum){
+    return new TreeSet<String>(frekvencaBesed.get(datum).keySet());
+  }
+  public long [] dobiFrekBesedeNaDatum(String datum, String beseda){
+     BesFrek bs = frekvencaBesed.get(datum).get(beseda);
+    return new long[] {bs.besDoDatuma ,bs.pojavitve};
+  }
+
   static int zanimivaBesednaZveza = 0;
   static String bZ = "";
   static HashMap<String, Integer> zanimiveBesede = new HashMap<String, Integer> ();
@@ -496,6 +636,8 @@ static class PStranka {
       if(normiranaBeseda.length() <= 3 ) return;
       if(normiranaBeseda.equals("biti")) return;
 
+    
+
       if(!stBesed.containsKey(datum)){
         //Na ta datum še ni bilo besed!
         //datumi gredo po vrsti!
@@ -504,12 +646,36 @@ static class PStranka {
         Long[] tmp1 = {new Long(kumulativaBesed),new Long(1)};
         besedePrejDatum = 1; //v primeru, da je samo 1 beseda na ta datum
         stBesed.put(datum, tmp1);
+        
+        //HashMap<String, HashMap<String,BesFrek> >();
+         HashMap<String,BesFrek> tmp22 = new  HashMap<String,BesFrek>();
+         tmp22.put(normiranaBeseda, new BesFrek(datum,kumulativaBesed, normiranaBeseda));
+        frekvencaBesed.put(datum, tmp22);
+       // println(this.getID() +": " + "stBesed na datum " + datum + ": " + frekvencaBesed.get(datum).size() + " Prvič na datum: " + normiranaBeseda );
+       //HRAMBABESED
+    
+
+
       }else{
         //Na ta datum so že bile besede. Prištej to besedo
         Long[] tmp1 = {new Long(kumulativaBesed),  stBesed.get(datum)[1] + new Long(1)};
         //println(this.getID() +"], "+datum +" :  stBesed.get(datum)[1] :" + stBesed.get(datum)[1]);
         besedePrejDatum = stBesed.get(datum)[1] + 1; 
         stBesed.put(datum, tmp1);
+
+        if(!frekvencaBesed.get(datum).containsKey(normiranaBeseda)){
+          //Ta beseda je na ta datum prvič
+          HashMap<String,BesFrek> tmp22 =  frekvencaBesed.get(datum);
+          tmp22.put(normiranaBeseda, new BesFrek(datum,kumulativaBesed, normiranaBeseda));
+          frekvencaBesed.put(datum, tmp22);
+         // println(this.getID() +": " + "stBesed na datum " + datum + ": " + frekvencaBesed.get(datum).size() + " Dodajam BES: " + normiranaBeseda );
+        }else{
+          //beseda je že bla za ta datum
+          BesFrek a = frekvencaBesed.get(datum).get(normiranaBeseda);
+
+          a.povecaj();
+          //println(this.getID() +": " + "stBesed na datum " + datum + ": " + frekvencaBesed.get(datum).size() + ", BES: " + normiranaBeseda + " frek besede: " + a.pojavitve +"\n   "+ frekvencaBesed.get(datum).keySet() );
+        }
       }
 
       if(normiranaBeseda.equals("proti") && zanimivaBesednaZveza != -1 && false) {
@@ -598,6 +764,15 @@ static class PStranka {
   }
 }
 
+static class Besede{
+  String beseda;
+  long pojavitve;
+
+  public Besede(String b){
+    beseda = b;
+    pojavitve = 1;
+  }
+}
 
 static class Politik {
   String id;
@@ -613,10 +788,13 @@ static class Politik {
   //hashmap <datumSeje-štSeje, [kumulativaBesedDoDatuma, besedeTeGaGovora] >
   HashMap<String, Long[]>  StBesedNaSejo;
   SortedSet<String> UrejeniDatumi = null;
+
+  HashMap<String, Besede> besede;
   long kumulativaBesedDoDatuma = 0;
 
   public Politik() {
     stranka = null;
+    besede = new HashMap<String, Besede>();
   }
   
   public Politik(String ime, String priimek, String datum_rojstva, String datum_smrti, String kraj_rojstva, String drzava_rojstva, PStranka stranka) {
@@ -634,6 +812,7 @@ static class Politik {
     this.stranka = null;
     this.XMLperson = XMLdata;
     StBesedNaSejo = new HashMap<String,  Long[]>  ();
+     besede = new HashMap<String, Besede>();
   }
   
   public static class ImaZeStrankoException extends Exception{
@@ -739,6 +918,15 @@ static class Politik {
               try{
               Politik tmp1 = politiki.get(who);
               if(tmp1 != null){
+                String beseda = w.getContent();
+                if(tmp1.besede.containsKey(beseda) ){
+                  tmp1.besede.get(beseda).pojavitve++;
+
+                }else {
+                  tmp1.besede.put(beseda, new Besede(beseda));
+                }
+
+
                  PStranka tStr =  tmp1.stranka;
                  if(tStr != null){
                     tStr.obdelajBesedo(datum, w.getString("lemma"), w.getContent());
@@ -863,6 +1051,7 @@ DatumSlider slider;
 long stVnosovDatumov = 0;
 
 void setup() {
+   
   size(800, 600);
   stranke = new HashMap<String, PStranka>();
   politiki = new  HashMap<String, Politik>();
@@ -937,18 +1126,21 @@ void setup() {
   
 
   testStevilaBesed();
+  
   //besede po strankah
-  for(String stra1: stranke.keySet()){
-     println("[BESEDE] "+ stra1+":");
-    for(String datum: stranke.get(stra1).UrejeniDatumiBesed){
-      
-      if(false){
-        for(String beseda: stranke.get(stra1).besede.get(datum).keySet()){
-          print("["+ beseda +", "+  stranke.get(stra1).besede.get(datum).get(beseda)+"] ");
+  if(false){
+    for(String stra1: stranke.keySet()){
+      println("[BESEDE] "+ stra1+":");
+      for(String datum: stranke.get(stra1).UrejeniDatumiBesed){
+        
+        if(false){
+          for(String beseda: stranke.get(stra1).besede.get(datum).keySet()){
+            print("["+ beseda +", "+  stranke.get(stra1).besede.get(datum).get(beseda)+"] ");
+          }
+          println();
         }
-        println();
+        
       }
-      
     }
   }
  
@@ -958,12 +1150,22 @@ void setup() {
       //Long [] stBesed = stranke.get(stra1).stBesed.get(datum);
       //println("[" +stra1+"; STBESED: " + stBesed[0] +", " + stBesed[1]+"]; ");
       long[] aa = stranke.get(stra1).dobiStBesedNaDatum(datum);
-      println("[" +stra1+"; STBESED: " + aa[0] +", " + aa[1]+"]; ");
-    }
-     
-  }
+      println("[" +stra1+"; STBESED: " + aa[0] +", " + aa[1]+"]; ::");
+      for(String beseda: stranke.get(stra1).vseBesedeNaDatum(datum)){
+        BesFrek bs = stranke.get(stra1).frekvencaBesed.get(datum).get(beseda);
+        long[] aa2 =  stranke.get(stra1).dobiFrekBesedeNaDatum(datum, beseda);
+        println("   "+ bs + "|| "+ aa2[0] + ", "+ aa2[1] + " ");
 
-   
+      }
+      
+      println();
+      
+    }
+    
+  }
+  
+   for(String stra1: stranke.keySet()){
+   }
   
   for(Node n : graph.nodes) {
     n.radius = n.data.politiki.size() + 30;
