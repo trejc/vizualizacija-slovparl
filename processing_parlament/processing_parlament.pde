@@ -162,7 +162,7 @@ class DatumSlider {
     spos = xpos;
     newspos = spos;
     sposMin = xpos;
-    sposMax = xpos + swidth - sheight/2;
+    sposMax = xpos + swidth - sheight/2 + 1;
     loose = l;
   }
 
@@ -281,6 +281,7 @@ class Node {
     this.x = x;
     this.y = y;
     this.data = s;
+    text_y = 0;
     
     radius = 30;
     edges = new ArrayList<Edge>();
@@ -299,27 +300,78 @@ class Node {
   }
   
   public void shift(float dx, float dy) {
-    x += (dx * 0.4f);
-    y += (dy * 0.4f);
+    x += (dx * 0.35f);
+    y += (dy * 0.35f);
   }
   
+  float text_y;
   void render(Camera cam, String datum) {
     String s;
-    if(cam.zoom < 2.0f) {
-      s = data.imeStranke("init", datum);
-      textSize(14);
-    }else {
-      s = data.imeStranke("yes", datum);
-      textSize(6);
-    }
+    s = data.imeStranke("init", datum);
     
     if(s != null) {
       drawable = true;
       ellipseMode(RADIUS);
-      fill(255,255,255);
+      fill(150,150,150);
       ellipse(x, y, radius, radius);
-      fill(0,0,0);
-      text(s, (x - textWidth(s)/2), (y + textAscent()/2));
+      
+      HashMap<String, Integer> besede = data.besede.get(datum);
+      
+      if(besede != null) {
+        int vsota = 0;
+        for(int st : besede.values()) {
+          vsota += st;
+        }
+        
+        int i = 0;
+        float start = 0;
+        for(String beseda : besede.keySet()) {
+          float percentage = TWO_PI*float(besede.get(beseda))/float(vsota);
+          //println("stranka:" + this.data.imeStranke("init", datum) + " b:" + beseda + " %:" + percentage + " v:" + vsota + " st:" + besede.get(beseda));
+          
+          int barva = 0;
+          for(int j = 0; j < beseda.length(); j++) {
+            barva += beseda.charAt(j);
+          }
+          fill(barva*17%255, barva*13%255, barva*11%255, 95);
+          arc(x, y, radius, radius, start, start + percentage);
+          i = (i+13)%255;
+          start += percentage;
+          
+          if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
+            if(start == TWO_PI && start-percentage == 0) {
+              fill(255, 255, 255);
+              text(beseda, x - textWidth(beseda)/2, y + textAscent()/2);
+            }else {
+              float angle = atan2(mouseY - (y*cam.zoom+cam.y), mouseX - (x*cam.zoom+cam.x));
+              angle = angle < 0 ?  TWO_PI+angle : angle;
+              if(angle >= start - percentage && angle <= start) {
+                pushMatrix();
+                textSize(6);
+                translate(x, y);
+                rotate(start - percentage/2);
+                fill(255, 255, 255);
+                text(beseda, 8, textAscent()/4);
+                popMatrix();
+              }
+            }
+          }
+        }
+      }
+      
+      if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
+        println("texty:" + text_y + " y:" + y + " dafak:" + (y - radius - 10) + " bool:" + (text_y > y - radius - 10));
+        if(text_y < radius + 10) text_y += 4;
+        s = data.imeStranke("yes", datum);
+        textSize(6);
+      }else {
+        textSize(14);
+        if(text_y > 0) text_y -= 1;
+      }
+      
+      textSize(14);
+      fill(255,255,255);
+      text(s, (x - textWidth(s)/2), (y - text_y + textAscent()/2));
     }else {
       drawable = false;
     }
@@ -393,6 +445,10 @@ static class PStranka {
     besede = new HashMap<String, HashMap<String,Integer>>();
   }
   
+  public HashMap<String, Integer> besedeNaDatum(String datum){
+    return this.besede.get(datum);
+  }
+  
   public PStranka(XML[] orgNames) {
     this.orgNames = orgNames;
     besede = new HashMap<String, HashMap<String,Integer>>();
@@ -401,8 +457,8 @@ static class PStranka {
   
   public void dodaj_podatke_iz_xml(XML xml) {
     this.orgNames = xml.getChildren("orgName");
-
   }
+  
   public String getID(){
     if(this.id != null) return this.id;
     else return "stranka nima IDja";
@@ -415,7 +471,7 @@ static class PStranka {
   static void zanimivo(String beseda){
     PStranka.zanimiveBesede.put(beseda, 1);
   }
-  public void obdelajBesedo(String datum_Seja, String normiranaBeseda, String beseda ){
+  public void obdelajBesedo(String datum, String normiranaBeseda, String beseda ){
       //println("Obdelava besede: "+ normiranaBeseda);
       if(zanimivaBesednaZveza > 0){
         bZ+= " "+ beseda;
@@ -428,29 +484,29 @@ static class PStranka {
       if(normiranaBeseda.length() <= 3 ) return;
       if(normiranaBeseda.equals("biti")) return;
       if(normiranaBeseda.equals("proti") && zanimivaBesednaZveza != -1) {
-        bZ+="****ZANIMIVA BES ZVEZA:>>>>>" +datum_Seja +": "+ beseda;
+        bZ+="****ZANIMIVA BES ZVEZA:>>>>>" + datum +": "+ beseda;
         zanimivaBesednaZveza = 5;
       }else if ( zanimivaBesednaZveza == -1)  zanimivaBesednaZveza = 0;
      
       if(! (PStranka.zanimiveBesede.containsKey(normiranaBeseda) || normiranaBeseda.substring(normiranaBeseda.length()-3,normiranaBeseda.length()).equals("ost")) ) return;
       try{
-        if(!this.besede.containsKey(datum_Seja)){
+        if(!this.besede.containsKey(datum)){
           //za ta datum-štSeje še ni bilo nobene besede
          // println("[obdelajBesedo] datum " +datum_Seja + "še ni v bazi 'besede'" );
           HashMap<String,Integer> trBeseda = new HashMap<String,Integer>();
           trBeseda.put(normiranaBeseda, 1);
-          this.besede.put(datum_Seja, trBeseda);
-        }else if(! besede.get(datum_Seja).containsKey(normiranaBeseda)){
+          this.besede.put(datum, trBeseda);
+        }else if(! besede.get(datum).containsKey(normiranaBeseda)){
           //za ta datum-štSeje že so besede, samo 'normiranaBeseda' se je zgodila 
           //prvič
          // println("[obdelajBesedo] besede " +normiranaBeseda + "še ni v bazi 'besede' za datum " + datum_Seja );
-          besede.get(datum_Seja).put(normiranaBeseda, 1);
+          besede.get(datum).put(normiranaBeseda, 1);
         }else{
           //beseda se je za ta datum-štSeje že pojavila
-          besede.get(datum_Seja).put(normiranaBeseda,  besede.get(datum_Seja).get(normiranaBeseda) + 1);
+          besede.get(datum).put(normiranaBeseda,  besede.get(datum).get(normiranaBeseda) + 1);
         }
       }catch(Exception e){
-        println("error [obdelajBesedo]  ob klicu " +datum_Seja + ", " + normiranaBeseda +" this.besede= " + this.besede);
+        println("error [obdelajBesedo]  ob klicu " +datum + ", " + normiranaBeseda +" this.besede= " + this.besede);
         e.printStackTrace();
       } 
   }
@@ -657,7 +713,7 @@ static class Politik {
               if(tmp1 != null){
                  PStranka tStr =  tmp1.stranka;
                  if(tStr != null){
-                    tStr.obdelajBesedo(datum+"-"+stSeje, w.getString("lemma"), w.getContent());
+                    tStr.obdelajBesedo(datum, w.getString("lemma"), w.getContent());
                  }
                  
 
@@ -770,6 +826,7 @@ public void testStevilaBesed(){
 HashMap<String, Politik> politiki;
 HashMap<String, PStranka> stranke;
 ArrayList<String> datumi;
+float[][] barveBesed;
 String datum_prikaza;
 Camera camera;
 Graph graph;
@@ -838,12 +895,16 @@ void setup() {
   PStranka.zanimivo("ljudstvo");
   PStranka.zanimivo("narod");
   PStranka.zanimivo("sovražnik");
+  
+  barveBesed = new float[PStranka.zanimiveBesede.size()][3];
+  for(int i = 0; i < barveBesed.length; i++) {
+    barveBesed[i] = new float[]{random(255), random(255), random(255)};
+  }
 
   try{
      preberiSeje();
   }catch (Exception e) {
     e.printStackTrace();
-    
   }
   
 
@@ -858,6 +919,10 @@ void setup() {
       }
       println();
     }
+  }
+  
+  for(Node n : graph.nodes) {
+    n.radius = n.data.politiki.size() + 30;
   }
 
 

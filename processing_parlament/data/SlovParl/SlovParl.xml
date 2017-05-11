@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <teiCorpus xmlns="http://www.tei-c.org/ns/1.0" xmlns:xi="http://www.w3.org/2001/XInclude">
    <teiHeader>
       <fileDesc>
@@ -6616,8 +6616,7 @@
                      </bibl>
                   </org>
                   <org xml:id="pp.ZSMS">
-                     <orgName full="yes" notBefore="1989" notAfter="1990-11-10">ZSMS-Liberalna
-                        stranka</orgName>
+                     <orgName full="yes" notBefore="1989" notAfter="1990-11-10">ZSMS-Liberalna stranka</orgName>
                      <orgName full="init" notBefore="1989" notAfter="1990-11-10">ZSMS</orgName>
                      <state from="1943-10-12"
                             to="1994-03-12"
