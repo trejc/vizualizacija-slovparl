@@ -491,7 +491,6 @@ static class PStranka {
       if(! (PStranka.zanimiveBesede.containsKey(normiranaBeseda) || normiranaBeseda.substring(normiranaBeseda.length()-3,normiranaBeseda.length()).equals("ost")) ) return;
       try{
         if(!this.besede.containsKey(datum)){
-          //za ta datum-štSeje še ni bilo nobene besede
          // println("[obdelajBesedo] datum " +datum_Seja + "še ni v bazi 'besede'" );
           HashMap<String,Integer> trBeseda = new HashMap<String,Integer>();
           trBeseda.put(normiranaBeseda, 1);
