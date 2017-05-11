@@ -472,7 +472,10 @@ static class PStranka {
     if(this.id != null) return this.id;
     else return "stranka nima IDja";
   }
-
+  public long [] dobiStBesedNaDatum(String datum){
+    Long[] tmp = stBesed.get(datum);
+    return new long[]{tmp[0], tmp[1]};
+  }
   static int zanimivaBesednaZveza = 0;
   static String bZ = "";
   static HashMap<String, Integer> zanimiveBesede = new HashMap<String, Integer> ();
@@ -943,17 +946,19 @@ void setup() {
         for(String beseda: stranke.get(stra1).besede.get(datum).keySet()){
           print("["+ beseda +", "+  stranke.get(stra1).besede.get(datum).get(beseda)+"] ");
         }
+        println();
       }
-      println();
+      
     }
   }
  
   for(String stra1: stranke.keySet()){
     for(String datum:  new TreeSet<String>(stranke.get(stra1).stBesed.keySet()) ){
       print(" ["+datum+"]");
-      Long [] stBesed = stranke.get(stra1).stBesed.get(datum);
-      println("[" +stra1+"; STBESED: " + stBesed[0] +", " + stBesed[1]+"]; ");
-
+      //Long [] stBesed = stranke.get(stra1).stBesed.get(datum);
+      //println("[" +stra1+"; STBESED: " + stBesed[0] +", " + stBesed[1]+"]; ");
+      long[] aa = stranke.get(stra1).dobiStBesedNaDatum(datum);
+      println("[" +stra1+"; STBESED: " + aa[0] +", " + aa[1]+"]; ");
     }
      
   }
