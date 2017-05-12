@@ -3,6 +3,11 @@ static class GrupaBesed{
   String labelGrupe;
   int stevecBessed;
   String prejDatum;
+  static long vseBesede=0;
+  static long pocisceneBesede=0;
+  static long avg = 0;
+  static int max = 0;
+  
   //      <datum, <beseda, stPojavitev> >
   HashMap<String, HashMap<String, Integer> > besede;
   public GrupaBesed(String label){
@@ -27,12 +32,27 @@ static class GrupaBesed{
   public final boolean imaBesedo(String datum, String beseda){
     return jeDatum(datum) && besede.get(datum).containsKey(beseda);
   }
+  public final void purgeLessThan(int frek){
+    Iterator datI = besede.entrySet().iterator();
+    while (datI.hasNext()) {
+         Map.Entry pair = (Map.Entry)datI.next();
+        String dat = (String) pair.getKey();
+        Iterator besI =((HashMap) pair.getValue()).entrySet().iterator();
+        while (besI.hasNext()) {
+            Map.Entry pair2 = (Map.Entry)besI.next();
+            String bes = (String) pair2.getKey();
+            if (((Integer) pair2.getValue()) < frek){
+                besI.remove();
+                pocisceneBesede++;
+               
+            }
+        }
+    }
+  }
   public boolean preveriBesedo(String beseda){
     if(beseda.equals("biti")) return false;
-    if(beseda.equals("gospodarstvo")) return false;
-    if(beseda.length() <= 3 ) return false;
-    if(beseda.substring(beseda.length()-3, beseda.length()).equals("ost")) return false; 
-    return false;
+    if(beseda.length() <= 3 ) return false; 
+    return true;
   }
   public final void AddWord(String datum, String word){
     //preveri, če beseda spada v grupo
@@ -41,12 +61,11 @@ static class GrupaBesed{
       if(imaBesedo(datum, word)){
         //za datum obstaja beseda
         int oldNum = besede.get(datum).get(word);
+        if(max < oldNum+1) max = oldNum+1;
         besede.get(datum).put(word, oldNum+1);
-        stevecBessed++;
       }else if(jeDatum(datum)){
         //za datum ni besede -> še nikoli ni bila
         besede.get(datum).put(word, 1);
-        stevecBessed++;
       }else{
         
         //ni datuma, postavi datum
@@ -54,15 +73,14 @@ static class GrupaBesed{
           //obstaja prejšnji datum
           HashMap<String, Integer> novDatum =  kopiraj(besede.get(prejDatum));
           int oldNum = novDatum.containsKey(word) ? novDatum.get(word) : 0;
+          if(max < oldNum+1) max = oldNum+1;
           novDatum.put(word, oldNum+1);
-          stevecBessed++;
           besede.put(datum, novDatum);
           prejDatum = datum;
         }else{
           //prvič govorijo oz ni preš. datuma
           HashMap<String, Integer> novDatum = new HashMap<String, Integer>();
           novDatum.put(word, 1);
-          stevecBessed++;
           besede.put(datum, novDatum);
           prejDatum = datum;
         }
@@ -72,7 +90,11 @@ static class GrupaBesed{
       
       CRASH_APP();
     }
+    //teli števci še niso pravi
+    stevecBessed+= besede.get(datum).size();
+    vseBesede+=  besede.get(datum).size();
   }
+
 }
 static class PStranka {
   XML[] orgNames;
@@ -91,6 +113,12 @@ static class PStranka {
       grupeBesed.add(grupa);
     }
   }
+  public void precistiGrupe(int d){
+    for(GrupaBesed grupa : grupeBesed){
+       grupa.purgeLessThan(d);
+    }
+    System.gc();
+  }
   long kumulativaBesed = 0;
   //št besed prejšnega datuma
   long besedePrejDatum = 0;
@@ -105,7 +133,7 @@ static class PStranka {
     frekvencaBesed = new HashMap<String, HashMap<String,BesFrek> >();
     besedeStranke = new HashMap<String, HrambaBesed>();
     grupeBesed = new ArrayList<GrupaBesed>();
-    dodajGrupe(new GrupaBesed("test"),new GrupaBesed("test"));
+    dodajGrupe(new GrupaBesed("a"));
   }
   
   public HashMap<String, Integer> besedeNaDatum(String datum){
@@ -120,7 +148,7 @@ static class PStranka {
     frekvencaBesed = new HashMap<String, HashMap<String,BesFrek> >();
     besedeStranke = new HashMap<String, HrambaBesed>();
     grupeBesed = new ArrayList<GrupaBesed>();
-    dodajGrupe(new GrupaBesed("test"),new GrupaBesed("test"));
+    dodajGrupe(new GrupaBesed("a"));
   }
   
   public void dodaj_podatke_iz_xml(XML xml) {

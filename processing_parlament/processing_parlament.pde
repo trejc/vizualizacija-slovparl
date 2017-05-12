@@ -482,9 +482,11 @@ public void preberiSeje(){
   for(String key : politiki.keySet()){
        politiki.get(key).UrejeniDatumi = new TreeSet<String>(politiki.get(key).StBesedNaSejo.keySet());
   }
+  println("purging");
   for(String key : stranke.keySet()){
-       stranke.get(key).UrejeniDatumiBesed =  new TreeSet<String>(stranke.get(key).besede.keySet());
+      stranke.get(key).precistiGrupe(Math.round(2035*0.1));
   }
+  println("purge done");
   println("done");
 }
 public void testStevilaBesed(){
@@ -587,7 +589,9 @@ void setup() {
       }
     }
   }
-  
+  println("vse besede: " + GrupaBesed.vseBesede);
+  println("pociscene besede: " + GrupaBesed.pocisceneBesede);
+  println("max pojavitev: " + GrupaBesed.max);
   for(Node n : graph.nodes) {
     n.radius = n.data.politiki.size() + 30;
   }
