@@ -115,7 +115,7 @@ static class Politik {
               <w> - beseda
               <pc> - ločilo
     */
-    println("DATUM: " + datum + ", StSeje: " + stSeje);
+    //println("DATUM: " + datum + ", StSeje: " + stSeje);
     //      <IDpolitika, stBesedSeje>
     HashMap<String, Long> lokalnaKumulativa = new HashMap<String, Long>();
      
@@ -149,8 +149,8 @@ static class Politik {
               }
               }catch(Exception e) {
                 println("error [obdelajBesedo]  ob klicu " + " who: " + who);
-                e.printStackTrace();
-                 
+                
+                CRASH_APP();
               }
             } 
              

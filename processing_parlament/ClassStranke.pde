@@ -28,38 +28,49 @@ static class GrupaBesed{
     return jeDatum(datum) && besede.get(datum).containsKey(beseda);
   }
   public boolean preveriBesedo(String beseda){
-    return true;
+    if(beseda.equals("biti")) return false;
+    if(beseda.equals("gospodarstvo")) return false;
+    if(beseda.length() <= 3 ) return false;
+    if(beseda.substring(beseda.length()-3, beseda.length()).equals("ost")) return false; 
+    return false;
   }
   public final void AddWord(String datum, String word){
     //preveri, če beseda spada v grupo
     if(!preveriBesedo(word)) return;
-    if(imaBesedo(datum, word)){
-      //za datum obstaja beseda
-      int oldNum = besede.get(datum).get(word);
-      besede.get(datum).put(word, oldNum+1);
-      stevecBessed++;
-    }else if(jeDatum(datum)){
-      //za datum ni besede -> še nikoli ni bila
-      besede.get(datum).put(word, 1);
-      stevecBessed++;
-    }else{
-      //ni datuma, postavi datum
-      if(prejDatum != null  && jeDatum(prejDatum)){
-        //obstaja prejšnji datum
-        HashMap<String, Integer> novDatum =  kopiraj(besede.get(prejDatum));
-        int oldNum = novDatum.get(word);
-        novDatum.put(word, oldNum+1);
+    try{
+      if(imaBesedo(datum, word)){
+        //za datum obstaja beseda
+        int oldNum = besede.get(datum).get(word);
+        besede.get(datum).put(word, oldNum+1);
         stevecBessed++;
-        besede.put(datum, novDatum);
-        prejDatum = datum;
+      }else if(jeDatum(datum)){
+        //za datum ni besede -> še nikoli ni bila
+        besede.get(datum).put(word, 1);
+        stevecBessed++;
       }else{
-        //prvič govorijo oz ni preš. datuma
-        HashMap<String, Integer> novDatum = new HashMap<String, Integer>();
-        novDatum.put(word, 1);
-        stevecBessed++;
-        besede.put(datum, novDatum);
-        prejDatum = datum;
+        
+        //ni datuma, postavi datum
+        if(prejDatum != null  && jeDatum(prejDatum)){
+          //obstaja prejšnji datum
+          HashMap<String, Integer> novDatum =  kopiraj(besede.get(prejDatum));
+          int oldNum = novDatum.containsKey(word) ? novDatum.get(word) : 0;
+          novDatum.put(word, oldNum+1);
+          stevecBessed++;
+          besede.put(datum, novDatum);
+          prejDatum = datum;
+        }else{
+          //prvič govorijo oz ni preš. datuma
+          HashMap<String, Integer> novDatum = new HashMap<String, Integer>();
+          novDatum.put(word, 1);
+          stevecBessed++;
+          besede.put(datum, novDatum);
+          prejDatum = datum;
+        }
       }
+    } catch (Exception e) {
+       println("error [AddWord]  ob klicu " + " datum: " + datum);
+      
+      CRASH_APP();
     }
   }
 }
@@ -74,6 +85,12 @@ static class PStranka {
   //<datum-stseje,[štBesedDoDatuma, štBesedNaTaDatum]>
   HashMap<String, Long[]> stBesed;
    
+  ArrayList<GrupaBesed> grupeBesed;
+  public void dodajGrupe(GrupaBesed... grupe ){
+    for(GrupaBesed grupa : grupe){
+      grupeBesed.add(grupa);
+    }
+  }
   long kumulativaBesed = 0;
   //št besed prejšnega datuma
   long besedePrejDatum = 0;
@@ -87,6 +104,8 @@ static class PStranka {
     stBesed = new HashMap<String, Long[]>();
     frekvencaBesed = new HashMap<String, HashMap<String,BesFrek> >();
     besedeStranke = new HashMap<String, HrambaBesed>();
+    grupeBesed = new ArrayList<GrupaBesed>();
+    dodajGrupe(new GrupaBesed("test"),new GrupaBesed("test"));
   }
   
   public HashMap<String, Integer> besedeNaDatum(String datum){
@@ -100,6 +119,8 @@ static class PStranka {
     stBesed = new HashMap<String, Long[]>();
     frekvencaBesed = new HashMap<String, HashMap<String,BesFrek> >();
     besedeStranke = new HashMap<String, HrambaBesed>();
+    grupeBesed = new ArrayList<GrupaBesed>();
+    dodajGrupe(new GrupaBesed("test"),new GrupaBesed("test"));
   }
   
   public void dodaj_podatke_iz_xml(XML xml) {
@@ -131,78 +152,9 @@ static class PStranka {
     PStranka.zanimiveBesede.put(beseda, 1);
   }
   public void obdelajBesedo(String datum, String normiranaBeseda, String beseda ){
-      //println("Obdelava besede: "+ normiranaBeseda);
-      if(zanimivaBesednaZveza > 0){
-        bZ+= " "+ beseda;
-        zanimivaBesednaZveza--;
-      }else if(!bZ.equals("")) {
-        zanimivaBesednaZveza = -1;
-        println(bZ);
-        bZ = "";
+      for(GrupaBesed gr: grupeBesed){
+        gr.AddWord(datum, beseda);
       }
-      if(normiranaBeseda.length() <= 3 ) return;
-      if(normiranaBeseda.equals("biti")) return;
-    
-      if(!stBesed.containsKey(datum)){
-        //Na ta datum še ni bilo besed!
-        //datumi gredo po vrsti!
-        //kumulativa besed = kumbesed + stbesed iz prejsnjega datuma
-        kumulativaBesed += besedePrejDatum;
-        Long[] tmp1 = {new Long(kumulativaBesed),new Long(1)};
-        besedePrejDatum = 1; //v primeru, da je samo 1 beseda na ta datum
-        stBesed.put(datum, tmp1);
-        
-        //HashMap<String, HashMap<String,BesFrek> >();
-         HashMap<String,BesFrek> tmp22 = new  HashMap<String,BesFrek>();
-         tmp22.put(normiranaBeseda, new BesFrek(datum,kumulativaBesed, normiranaBeseda));
-        frekvencaBesed.put(datum, tmp22);
-       // println(this.getID() +": " + "stBesed na datum " + datum + ": " + frekvencaBesed.get(datum).size() + " Prvič na datum: " + normiranaBeseda );
-       //HRAMBABESED
-    
-      }else{
-        //Na ta datum so že bile besede. Prištej to besedo
-        Long[] tmp1 = {new Long(kumulativaBesed),  stBesed.get(datum)[1] + new Long(1)};
-        //println(this.getID() +"], "+datum +" :  stBesed.get(datum)[1] :" + stBesed.get(datum)[1]);
-        besedePrejDatum = stBesed.get(datum)[1] + 1; 
-        stBesed.put(datum, tmp1);
-        if(!frekvencaBesed.get(datum).containsKey(normiranaBeseda)){
-          //Ta beseda je na ta datum prvič
-          HashMap<String,BesFrek> tmp22 =  frekvencaBesed.get(datum);
-          tmp22.put(normiranaBeseda, new BesFrek(datum,kumulativaBesed, normiranaBeseda));
-          frekvencaBesed.put(datum, tmp22);
-         // println(this.getID() +": " + "stBesed na datum " + datum + ": " + frekvencaBesed.get(datum).size() + " Dodajam BES: " + normiranaBeseda );
-        }else{
-          //beseda je že bla za ta datum
-          BesFrek a = frekvencaBesed.get(datum).get(normiranaBeseda);
-          a.povecaj();
-          //println(this.getID() +": " + "stBesed na datum " + datum + ": " + frekvencaBesed.get(datum).size() + ", BES: " + normiranaBeseda + " frek besede: " + a.pojavitve +"\n   "+ frekvencaBesed.get(datum).keySet() );
-        }
-      }
-      if(normiranaBeseda.equals("proti") && zanimivaBesednaZveza != -1 && false) {
-        bZ+="****ZANIMIVA BES ZVEZA:>>>>>" +datum +": "+ beseda;
-        zanimivaBesednaZveza = 5;
-      }else if ( zanimivaBesednaZveza == -1)  zanimivaBesednaZveza = 0;
-     
-      if(! (PStranka.zanimiveBesede.containsKey(normiranaBeseda) || normiranaBeseda.substring(normiranaBeseda.length()-3,normiranaBeseda.length()).equals("ost")) ) return;
-      try{
-        if(!this.besede.containsKey(datum)){
-         // println("[obdelajBesedo] datum " +datum_Seja + "še ni v bazi 'besede'" );
-          HashMap<String,Integer> trBeseda = new HashMap<String,Integer>();
-          trBeseda.put(normiranaBeseda, 1);
-          this.besede.put(datum, trBeseda);
-        }else if(! besede.get(datum).containsKey(normiranaBeseda)){
-          //za ta datum-štSeje že so besede, samo 'normiranaBeseda' se je zgodila 
-          //prvič
-         // println("[obdelajBesedo] besede " +normiranaBeseda + "še ni v bazi 'besede' za datum " + datum_Seja );
-          besede.get(datum).put(normiranaBeseda, 1);
-        }else{
-          //beseda se je za ta datum-štSeje že pojavila
-          besede.get(datum).put(normiranaBeseda,  besede.get(datum).get(normiranaBeseda) + 1);
-        }
-      }catch(Exception e){
-        println("error [obdelajBesedo]  ob klicu " +datum + ", " + normiranaBeseda +" this.besede= " + this.besede);
-        e.printStackTrace();
-      } 
   }
   
   public String imeStranke(String full, String datum) { 

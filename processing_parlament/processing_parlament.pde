@@ -472,14 +472,12 @@ public void preberiSeje(){
    String [] imenaDatotek = getFileNames();
   //imenaDatotek.length
   for(int i = 0; i < imenaDatotek.length; i++){
-    println(folderPath+"/"+imenaDatotek[i]);
+    //println(folderPath+"/"+imenaDatotek[i]);
     XML xml = loadXML(folderPath+"/"+imenaDatotek[i]);
     XML body = xml.getChild("text").getChild("body");
-    try{
+    
     Politik.prestejBesede(body, imenaDatotek[i].substring(0,10), imenaDatotek[i].substring(imenaDatotek[i].length()-11,imenaDatotek[i].length()-7), politiki);
-    }catch (Exception e) {
-      e.printStackTrace();
-    }
+    
   }
   for(String key : politiki.keySet()){
        politiki.get(key).UrejeniDatumi = new TreeSet<String>(politiki.get(key).StBesedNaSejo.keySet());
@@ -569,61 +567,31 @@ void setup() {
   for(int i = 0; i < barveBesed.length; i++) {
     barveBesed[i] = new float[]{random(255), random(255), random(255)};
   }
-  try{
-     preberiSeje();
-  }catch (Exception e) {
-    e.printStackTrace();
-  }
+  println("branje sej ...");
+  preberiSeje();
   
-  testStevilaBesed();
-  
-  //besede po strankah
+  //testStevilaBesed();
   if(false){
+    println("printanje vseh besed ...");
     for(String stra1: stranke.keySet()){
-      println("[BESEDE] "+ stra1+":");
-      for(String datum: stranke.get(stra1).UrejeniDatumiBesed){
-        
-        if(false){
-          for(String beseda: stranke.get(stra1).besede.get(datum).keySet()){
-            print("["+ beseda +", "+  stranke.get(stra1).besede.get(datum).get(beseda)+"] ");
+      //HashMap<String, Integer>
+      ArrayList<GrupaBesed> grupe = stranke.get(stra1).grupeBesed;
+      for(GrupaBesed gBe: grupe){
+        println(gBe.labelGrupe);
+        for(String datum : new TreeSet<String>(gBe.besede.keySet()) ){
+          println(stra1 +"] "+ datum + ": ");
+          for(String beseda : gBe.besede.get(datum).keySet()){
+            println("    "+ beseda + ", " + gBe.besede.get(datum).get(beseda));
           }
-          println();
         }
-        
       }
     }
   }
- 
-  for(String stra1: stranke.keySet()){
-    for(String datum:  new TreeSet<String>(stranke.get(stra1).stBesed.keySet()) ){
-      print(" ["+datum+"]");
-      //Long [] stBesed = stranke.get(stra1).stBesed.get(datum);
-      //println("[" +stra1+"; STBESED: " + stBesed[0] +", " + stBesed[1]+"]; ");
-      long[] aa = stranke.get(stra1).dobiStBesedNaDatum(datum);
-      println("[" +stra1+"; STBESED: " + aa[0] +", " + aa[1]+"]; ::");
-      for(String beseda: stranke.get(stra1).vseBesedeNaDatum(datum)){
-        BesFrek bs = stranke.get(stra1).frekvencaBesed.get(datum).get(beseda);
-        long[] aa2 =  stranke.get(stra1).dobiFrekBesedeNaDatum(datum, beseda);
-        println("   "+ bs + "|| "+ aa2[0] + ", "+ aa2[1] + " ");
-      }
-      
-      println();
-      
-    }
-    
-  }
-  
-   for(String stra1: stranke.keySet()){
-   }
   
   for(Node n : graph.nodes) {
     n.radius = n.data.politiki.size() + 30;
   }
-  long preracVelikost = stVnosovDatumov * Long.BYTES *2 + stVnosovDatumov * 15;
-  println("stVnosov števila besed: " + stVnosovDatumov +" >> " +preracVelikost+ "B");
-  
-  println(new Test());
- 
+
 }
 static void CRASH_APP(){
   double a = 1/0;
