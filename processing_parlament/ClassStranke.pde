@@ -10,10 +10,13 @@ static class GrupaBesed{
   
   //      <datum, <beseda, stPojavitev> >
   HashMap<String, HashMap<String, Integer> > besede;
+  // <datum, frekvence vseh besed  vključno z datumom>
+  HashMap<String, Long> pojNaDatum;
   public GrupaBesed(String label){
     labelGrupe = label;
     stevecBessed = 0;
     besede = new HashMap<String, HashMap<String, Integer> >();
+    pojNaDatum = new  HashMap<String, Long>();
     prejDatum = null;
   }
   public final HashMap<String, Integer> kopiraj(  HashMap<String, Integer> source){
@@ -93,6 +96,25 @@ static class GrupaBesed{
     //teli števci še niso pravi
     stevecBessed+= besede.get(datum).size();
     vseBesede+=  besede.get(datum).size();
+  }
+  public final long vsePojavitve(String datum){
+    if(!pojNaDatum.containsKey(datum)){
+      //Za ta datum št besed še ni izračunano
+      long stNaDatum =0;
+      if(besede.containsKey(datum)){
+        //na ta datum so besede
+        HashMap<String, Integer> tmBes = besede.get(datum);
+        for(String be: tmBes.keySet()){
+          stNaDatum+=tmBes.get(be);
+        }
+      }
+      pojNaDatum.put(datum, new Long(stNaDatum));
+    }
+    //Za ta datum je št besed že izračunano
+      return pojNaDatum.get(datum);
+  }
+  public final HashMap<String, Integer> besDoDatuma(String datum){
+    return besede.containsKey(datum) ? besede.get(datum): null;
   }
 
 }

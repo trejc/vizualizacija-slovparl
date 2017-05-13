@@ -298,7 +298,15 @@ class Node {
       ellipse(x, y, radius, radius);
       
       HashMap<String, Integer> besede = data.besede.get(datum);
-      
+      //Potrebno bo obdelati grupe besed
+      ArrayList<GrupaBesed> grupeBesed = data.grupeBesed;
+      long vseBesede = 0;
+      if(grupeBesed != null && grupeBesed.size() >0 ){
+        for(GrupaBesed gB: grupeBesed){
+          vseBesede+=gB.vsePojavitve(datum);
+        }
+      }
+      println("Vse pojavitve besed za str " + data.getID() + vseBesede);
       if(besede != null) {
         int vsota = 0;
         for(int st : besede.values()) {
@@ -342,7 +350,7 @@ class Node {
       }
       
       if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
-        println("texty:" + text_y + " y:" + y + " dafak:" + (y - radius - 10) + " bool:" + (text_y > y - radius - 10));
+        //println("texty:" + text_y + " y:" + y + " dafak:" + (y - radius - 10) + " bool:" + (text_y > y - radius - 10));
         if(text_y < radius + 10) text_y += 4;
         s = data.imeStranke("yes", datum);
         textSize(6);
@@ -471,14 +479,17 @@ public void preberiSeje(){
   
    String [] imenaDatotek = getFileNames();
   //imenaDatotek.length
+  print("0%");
   for(int i = 0; i < imenaDatotek.length; i++){
     //println(folderPath+"/"+imenaDatotek[i]);
     XML xml = loadXML(folderPath+"/"+imenaDatotek[i]);
     XML body = xml.getChild("text").getChild("body");
     
     Politik.prestejBesede(body, imenaDatotek[i].substring(0,10), imenaDatotek[i].substring(imenaDatotek[i].length()-11,imenaDatotek[i].length()-7), politiki);
-    
+    if(Math.round((i/imenaDatotek.length)*10) == 5 ) print("50%");
+    else System.out.print("=");
   }
+  println("100%");
   for(String key : politiki.keySet()){
        politiki.get(key).UrejeniDatumi = new TreeSet<String>(politiki.get(key).StBesedNaSejo.keySet());
   }
@@ -573,7 +584,7 @@ void setup() {
   preberiSeje();
   
   //testStevilaBesed();
-  if(false){
+  if(true){
     println("printanje vseh besed ...");
     for(String stra1: stranke.keySet()){
       //HashMap<String, Integer>
@@ -581,10 +592,13 @@ void setup() {
       for(GrupaBesed gBe: grupe){
         println(gBe.labelGrupe);
         for(String datum : new TreeSet<String>(gBe.besede.keySet()) ){
-          println(stra1 +"] "+ datum + ": ");
+          print(stra1 +"] "+ datum + ": ");
+          println(gBe.vsePojavitve(datum));
+          /*
           for(String beseda : gBe.besede.get(datum).keySet()){
             println("    "+ beseda + ", " + gBe.besede.get(datum).get(beseda));
           }
+          */
         }
       }
     }
