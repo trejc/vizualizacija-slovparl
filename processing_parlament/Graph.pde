@@ -157,16 +157,17 @@ class Node {
       fill(150,150,150);
       ellipse(x, y, radius, radius);
       
-      HashMap<String, Integer> besede = data.besede.get(datum);
+      HashMap<String, Integer> besede = null; //tole ni več prav način data.besede.get(datum);
       //Potrebno bo obdelati grupe besed
       ArrayList<GrupaBesed> grupeBesed = data.grupeBesed;
       long vseBesede = 0;
       if(grupeBesed != null && grupeBesed.size() >0 ){
         for(GrupaBesed gB: grupeBesed){
-          vseBesede+=gB.vsePojavitve(datum);
+          vseBesede+=gB.vsePojavitve(datum); //prišteje se vse pojavitve besed za vsako grupo
         }
       }
-      println("Vse pojavitve besed za str " + data.getID() +":  " +vseBesede);
+      //println("Vse pojavitve besed za str " + data.getID() +":  " +vseBesede);
+
       if(besede != null) {
         int vsota = 0;
         for(int st : besede.values()) {

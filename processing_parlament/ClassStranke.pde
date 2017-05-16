@@ -7,7 +7,7 @@ static class GrupaBesed{
   static long pocisceneBesede=0;
   static long avg = 0;
   static int max = 0;
-  
+  Color barva;
   //      <datum, <beseda, stPojavitev> >
   TreeMap<String, HashMap<String, Integer> > besede;
   // <datum, frekvence vseh besed  vključno z datumom>
@@ -18,6 +18,11 @@ static class GrupaBesed{
     besede = new TreeMap<String, HashMap<String, Integer> >();
     pojNaDatum = new  TreeMap<String, Long>();
     prejDatum = null;
+    barva = Color.gray;
+  }
+  public GrupaBesed(String label, Color bar){
+    this(label);
+    barva = bar;
   }
   public final HashMap<String, Integer> kopiraj(  HashMap<String, Integer> source){
     HashMap<String, Integer> novHM = new   HashMap<String, Integer>();
@@ -47,7 +52,6 @@ static class GrupaBesed{
         }
       } 
     }
-    
     Iterator datI = besede.entrySet().iterator();
     while (datI.hasNext()) {
          Map.Entry pair = (Map.Entry)datI.next();

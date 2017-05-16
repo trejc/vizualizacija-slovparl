@@ -18,7 +18,6 @@ static class Politik {
     stranka = null;
     besede = new HashMap<String, Besede>();
   }
-  
   public Politik(String ime, String priimek, String datum_rojstva, String datum_smrti, String kraj_rojstva, String drzava_rojstva, PStranka stranka) {
     this.ime = ime;
     this.priimek = priimek;
@@ -29,14 +28,12 @@ static class Politik {
     this.stranka = stranka;
     this.id = this.get_id();
   }
-  
   public Politik(XML XMLdata){
     this.stranka = null;
-    this.XMLperson = XMLdata;
+    this.XMLperson = null;
     StBesedNaSejo = new HashMap<String,  Long[]>  ();
      besede = new HashMap<String, Besede>();
   }
-  
   public static class ImaZeStrankoException extends Exception{
     static long stNapak = 0;
     public ImaZeStrankoException(String msg){
@@ -47,7 +44,6 @@ static class Politik {
   public String get_id() {
     return ime + priimek + datum_rojstva.substring(0, 4);
   }
-  
   public String toString(){
     return this.id;
   } 
