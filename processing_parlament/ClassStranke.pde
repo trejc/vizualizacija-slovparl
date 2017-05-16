@@ -9,14 +9,14 @@ static class GrupaBesed{
   static int max = 0;
   
   //      <datum, <beseda, stPojavitev> >
-  HashMap<String, HashMap<String, Integer> > besede;
+  TreeMap<String, HashMap<String, Integer> > besede;
   // <datum, frekvence vseh besed  vključno z datumom>
-  HashMap<String, Long> pojNaDatum;
+  TreeMap<String, Long> pojNaDatum;
   public GrupaBesed(String label){
     labelGrupe = label;
     stevecBessed = 0;
-    besede = new HashMap<String, HashMap<String, Integer> >();
-    pojNaDatum = new  HashMap<String, Long>();
+    besede = new TreeMap<String, HashMap<String, Integer> >();
+    pojNaDatum = new  TreeMap<String, Long>();
     prejDatum = null;
   }
   public final HashMap<String, Integer> kopiraj(  HashMap<String, Integer> source){
@@ -35,22 +35,36 @@ static class GrupaBesed{
   public final boolean imaBesedo(String datum, String beseda){
     return jeDatum(datum) && besede.get(datum).containsKey(beseda);
   }
+  boolean a = true;
   public final void purgeLessThan(int frek){
+     if(besede.size() == 0) return;
+    HashMap<String,Boolean> wordsToPurge = new HashMap<String,Boolean>();
+    HashMap<String,Integer> tmo1 =  besDoDatuma(besede.lastKey());
+    if(tmo1 != null) {
+      for(String bsda :tmo1.keySet()){
+        if ((tmo1.get(bsda)) < frek){
+          wordsToPurge.put(bsda,true);
+        }
+      } 
+    }
+    
     Iterator datI = besede.entrySet().iterator();
     while (datI.hasNext()) {
          Map.Entry pair = (Map.Entry)datI.next();
         String dat = (String) pair.getKey();
+        println( dat +" | "+ prejDatum);
         Iterator besI =((HashMap) pair.getValue()).entrySet().iterator();
         while (besI.hasNext()) {
             Map.Entry pair2 = (Map.Entry)besI.next();
             String bes = (String) pair2.getKey();
-            if (((Integer) pair2.getValue()) < frek){
+            if (wordsToPurge.containsKey(bes)){
                 besI.remove();
                 pocisceneBesede++;
                
             }
         }
     }
+    wordsToPurge=null;
   }
   public boolean preveriBesedo(String beseda){
     if(beseda.equals("biti")) return false;
