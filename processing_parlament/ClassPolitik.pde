@@ -12,27 +12,16 @@ static class Politik {
   //hashmap <datumSeje-štSeje, [kumulativaBesedDoDatuma, besedeTeGaGovora] >
   HashMap<String, Long[]>  StBesedNaSejo;
   SortedSet<String> UrejeniDatumi = null;
-  HashMap<String, Besede> besede;
+ 
   long kumulativaBesedDoDatuma = 0;
   public Politik() {
     stranka = null;
-    besede = new HashMap<String, Besede>();
-  }
-  public Politik(String ime, String priimek, String datum_rojstva, String datum_smrti, String kraj_rojstva, String drzava_rojstva, PStranka stranka) {
-    this.ime = ime;
-    this.priimek = priimek;
-    this.datum_rojstva = datum_rojstva;
-    this.datum_smrti = datum_smrti;
-    this.kraj_rojstva = kraj_rojstva;
-    this.drzava_rojstva = drzava_rojstva;
-    this.stranka = stranka;
-    this.id = this.get_id();
   }
   public Politik(XML XMLdata){
     this.stranka = null;
     this.XMLperson = null;
     StBesedNaSejo = new HashMap<String,  Long[]>  ();
-     besede = new HashMap<String, Besede>();
+    
   }
   public static class ImaZeStrankoException extends Exception{
     static long stNapak = 0;
@@ -131,12 +120,6 @@ static class Politik {
               try{
               Politik tmp1 = politiki.get(who);
               if(tmp1 != null){
-                String beseda = w.getContent();
-                if(tmp1.besede.containsKey(beseda) ){
-                  tmp1.besede.get(beseda).pojavitve++;
-                }else {
-                  tmp1.besede.put(beseda, new Besede(beseda));
-                }
                  PStranka tStr =  tmp1.stranka;
                  if(tStr != null){
                     tStr.obdelajBesedo(datum, w.getString("lemma"), w.getContent());

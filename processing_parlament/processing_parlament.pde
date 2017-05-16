@@ -140,58 +140,6 @@ public String [] getFileNames(){
   return imenaDatotek;
 }
 
-static class BesFrek{
-  String beseda;
-  String datum;
-  long pojavitve;
-  long besDoDatuma;
-  
-  public BesFrek(String dat, long besDoDatuma1, String bs){
-    datum = dat;
-    besDoDatuma = besDoDatuma1;
-    beseda = bs;
-    pojavitve = 1;
-  }
-  public void povecaj(){
-    pojavitve++;
-  }
-  public String toString(){
-    return datum+", " + beseda + ", "+ besDoDatuma+", "+ pojavitve; 
-  }
-   
-}
-static class HrambaBesed{
-  String beseda;
-  HashMap<String, Long> vseBesedeNaDatum;
-  HashMap<String, Long> pojavitveBesedeNaDatum;
-  public HrambaBesed(String beseda,String datum){
-    this.beseda=beseda;
-    vseBesedeNaDatum = new HashMap<String, Long>();
-    pojavitveBesedeNaDatum = new HashMap<String, Long>();
-    dodajDatum(datum);
-    initVseBesede(datum);
-  }
-  public void dodajPojavitev(String datum){
-    povecajBesedeNaDatum(datum);
-    povecajPojavitev(datum);
-  }
-  public void dodajNovo(String datum){
-    dodajDatum(datum);
-    initVseBesede(datum);
-  }
-  public void povecajBesedeNaDatum(String datum){
-    vseBesedeNaDatum.put(datum, vseBesedeNaDatum.get(datum)+1);
-  }
-  public void povecajPojavitev(String datum){
-    pojavitveBesedeNaDatum.put(datum, pojavitveBesedeNaDatum.get(datum)+1);
-  }
-  public void dodajDatum(String datum){
-    vseBesedeNaDatum.put(datum, new Long(1));
-  }
-  public void initVseBesede(String datum){
-     vseBesedeNaDatum.put(datum, new Long(1));
-  }
-}
 public void preberiSeje(){
  /*
    Datumsko naraščajoče preberi po 1 XML 
@@ -285,24 +233,12 @@ void setup() {
     println("št politikov z več strankami: " + Politik.ImaZeStrankoException.stNapak);
     //double a = 1/0;
   }
-  
-  PStranka.zanimivo("vojska");
-  PStranka.zanimivo("obramba");
-  PStranka.zanimivo("brezposelnost");
-  PStranka.zanimivo("banka");
-  PStranka.zanimivo("Jugoslavija");
-  PStranka.zanimivo("JNA");
-  PStranka.zanimivo("Armada");
-  PStranka.zanimivo("armada");
-  PStranka.zanimivo("JLA");
-  PStranka.zanimivo("ljudstvo");
-  PStranka.zanimivo("narod");
-  PStranka.zanimivo("sovražnik");
-  
+  /*nov način določanja barv!
   barveBesed = new float[PStranka.zanimiveBesede.size()][3];
   for(int i = 0; i < barveBesed.length; i++) {
     barveBesed[i] = new float[]{random(255), random(255), random(255)};
   }
+  */
   println("branje sej ...");
   preberiSeje();
   

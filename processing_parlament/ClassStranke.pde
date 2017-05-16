@@ -1,4 +1,4 @@
-
+import java.awt.Color;
 static class GrupaBesed{
   String labelGrupe;
   int stevecBessed;
@@ -42,7 +42,7 @@ static class GrupaBesed{
   }
   boolean a = true;
   public final void purgeLessThan(int frek){
-     if(besede.size() == 0) return;
+    if(besede.size() == 0) return;
     HashMap<String,Boolean> wordsToPurge = new HashMap<String,Boolean>();
     HashMap<String,Integer> tmo1 =  besDoDatuma(besede.lastKey());
     if(tmo1 != null) {
@@ -56,15 +56,13 @@ static class GrupaBesed{
     while (datI.hasNext()) {
          Map.Entry pair = (Map.Entry)datI.next();
         String dat = (String) pair.getKey();
-        println( dat +" | "+ prejDatum);
         Iterator besI =((HashMap) pair.getValue()).entrySet().iterator();
         while (besI.hasNext()) {
             Map.Entry pair2 = (Map.Entry)besI.next();
             String bes = (String) pair2.getKey();
             if (wordsToPurge.containsKey(bes)){
                 besI.remove();
-                pocisceneBesede++;
-               
+                pocisceneBesede++;  
             }
         }
     }
@@ -138,12 +136,7 @@ static class GrupaBesed{
 }
 static class PStranka {
   XML[] orgNames;
-  
   HashMap<String, Politik> politiki;
-  //  <beseda, (beseda <datum,pojavitve> <datum, besedenadatum)>
-  HashMap<String, HrambaBesed> besedeStranke;
-  //<datum,<beseda, (datum, beseda, frekvencaBesede, vseBesede)> >
-  HashMap<String, HashMap<String,BesFrek> > frekvencaBesed;
   //<datum-stseje,[štBesedDoDatuma, štBesedNaTaDatum]>
   HashMap<String, Long[]> stBesed;
    
@@ -168,63 +161,28 @@ static class PStranka {
   String id;
   public PStranka() {
     politiki = new HashMap<String, Politik>();
-    besede = new HashMap<String, HashMap<String,Integer>>();
-    stBesed = new HashMap<String, Long[]>();
-    frekvencaBesed = new HashMap<String, HashMap<String,BesFrek> >();
-    besedeStranke = new HashMap<String, HrambaBesed>();
     grupeBesed = new ArrayList<GrupaBesed>();
     dodajGrupe(new GrupaBesed("a"));
   }
-  
   public HashMap<String, Integer> besedeNaDatum(String datum){
     return this.besede.get(datum);
   }
-  
   public PStranka(XML[] orgNames) {
+    this();
     this.orgNames = orgNames;
-    besede = new HashMap<String, HashMap<String,Integer>>();
-    politiki = new HashMap<String, Politik>();
-    stBesed = new HashMap<String, Long[]>();
-    frekvencaBesed = new HashMap<String, HashMap<String,BesFrek> >();
-    besedeStranke = new HashMap<String, HrambaBesed>();
-    grupeBesed = new ArrayList<GrupaBesed>();
-    dodajGrupe(new GrupaBesed("a"));
   }
-  
   public void dodaj_podatke_iz_xml(XML xml) {
     this.orgNames = xml.getChildren("orgName");
   }
-  
   public String getID(){
     if(this.id != null) return this.id;
     else return "stranka nima IDja";
-  }
-  public long [] dobiStBesedNaDatum(String datum){
-    Long[] tmp = stBesed.get(datum);
-    return new long[]{tmp[0], tmp[1]};
-  }
-  public SortedSet<String> vsiDatumiBesed(){
-    return new TreeSet<String>(frekvencaBesed.keySet());
-  }
-  public SortedSet<String> vseBesedeNaDatum(String datum){
-    return new TreeSet<String>(frekvencaBesed.get(datum).keySet());
-  }
-  public long [] dobiFrekBesedeNaDatum(String datum, String beseda){
-     BesFrek bs = frekvencaBesed.get(datum).get(beseda);
-    return new long[] {bs.besDoDatuma ,bs.pojavitve};
-  }
-  static int zanimivaBesednaZveza = 0;
-  static String bZ = "";
-  static HashMap<String, Integer> zanimiveBesede = new HashMap<String, Integer> ();
-  static void zanimivo(String beseda){
-    PStranka.zanimiveBesede.put(beseda, 1);
   }
   public void obdelajBesedo(String datum, String normiranaBeseda, String beseda ){
       for(GrupaBesed gr: grupeBesed){
         gr.AddWord(datum, beseda);
       }
   }
-  
   public String imeStranke(String full, String datum) { 
     int leto = Integer.parseInt(datum.substring(0, 4));
     int mesec = Integer.parseInt(datum.substring(5, 7));
@@ -283,11 +241,3 @@ static class PStranka {
     return null;
   }
 }
-static class Besede{
-  String beseda;
-  long pojavitve;
-  public Besede(String b){
-    beseda = b;
-    pojavitve = 1;
-  }
-}//PStranka
