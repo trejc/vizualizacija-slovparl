@@ -1,4 +1,6 @@
 import java.awt.Color;
+static boolean THREAD = true;
+public static ArrayList<Thread> sortingThreads = new  ArrayList<Thread>();
 static class GrupaBesed{
   String labelGrupe;
   int stevecBessed;
@@ -7,6 +9,9 @@ static class GrupaBesed{
   static long pocisceneBesede=0;
   static long avg = 0;
   static int max = 0;
+  int lokalMax = 0;
+  static int sorting = 0;
+  int sortingLokal = 0;
   Color barva;
   //      <datum, <beseda, stPojavitev> >
   TreeMap<String, HashMap<String, Integer> > besede;
@@ -42,6 +47,7 @@ static class GrupaBesed{
   }
   boolean a = true;
   public final void purgeLessThan(int frek){
+    if(a) return;
     if(besede.size() == 0) return;
     HashMap<String,Boolean> wordsToPurge = new HashMap<String,Boolean>();
     HashMap<String,Integer> tmo1 =  besDoDatuma(besede.lastKey());
@@ -69,6 +75,7 @@ static class GrupaBesed{
     wordsToPurge=null;
   }
   public boolean preveriBesedo(String beseda){
+    //if(a) return true;
     if(beseda.equals("biti")) return false;
     if(beseda.length() <= 3 ) return false; 
     return true;
@@ -81,6 +88,7 @@ static class GrupaBesed{
         //za datum obstaja beseda
         int oldNum = besede.get(datum).get(word);
         if(max < oldNum+1) max = oldNum+1;
+        if(lokalMax < oldNum+1) lokalMax = oldNum+1;
         besede.get(datum).put(word, oldNum+1);
       }else if(jeDatum(datum)){
         //za datum ni besede -> še nikoli ni bila
@@ -93,6 +101,7 @@ static class GrupaBesed{
           HashMap<String, Integer> novDatum =  kopiraj(besede.get(prejDatum));
           int oldNum = novDatum.containsKey(word) ? novDatum.get(word) : 0;
           if(max < oldNum+1) max = oldNum+1;
+          if(lokalMax < oldNum+1) lokalMax = oldNum+1;
           novDatum.put(word, oldNum+1);
           besede.put(datum, novDatum);
           prejDatum = datum;
@@ -132,7 +141,76 @@ static class GrupaBesed{
   public final HashMap<String, Integer> besDoDatuma(String datum){
     return besede.containsKey(datum) ? besede.get(datum): null;
   }
+  public final void sortAllDates(){
+    ArrayList<Thread> lokThreadi = new ArrayList<Thread>();
 
+    for(String dat: besede.keySet()){
+      final String datum2 = dat;
+      if(THREAD){
+        Thread sortT = new Thread(){
+                        public void run(){
+                           sortDatum(datum2);                          
+                        }
+                      };
+       sortT.start();
+       lokThreadi.add(sortT);
+      }else{
+        sortDatum(datum2);
+      }
+       
+
+    }
+
+    for(Thread t : lokThreadi){
+      try{
+        t.join();
+      }catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    //println("End sortiranje: " + sortingLokal);
+
+  }
+  public final void sortDatum(String datum){
+    
+    HashMap<String, Integer> handler = besDoDatuma(datum);
+    if(handler != null && handler.size() > 0){
+      List<Map.Entry<String, Integer>> list = new LinkedList<Map.Entry<String, Integer>>( handler.entrySet() );
+      Collections.sort( list, new Comparator<Map.Entry<String, Integer>>()
+        {
+            public int compare( Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2 )
+            {
+                return (o1.getValue()).compareTo( o2.getValue() );
+            }
+        } );
+        HashMap<String, Integer> result = new LinkedHashMap<String, Integer>();
+        List<?> shallowCopy = list.subList(0, list.size());
+        Collections.reverse(shallowCopy);
+        for (Map.Entry<String, Integer> entry : list)
+        {
+            result.put( entry.getKey(), entry.getValue() );
+        }
+        besede.put(datum, null);      
+        besede.put(datum, result);
+    }
+  }
+  public final Thread threadIt(){
+    if(THREAD){
+      
+      Thread sortT = new Thread(){
+                        public void run(){
+                            //println("start sorting thread, current: " + GrupaBesed.sorting );
+                            sortAllDates();
+                        }
+                    };
+      sortT.start();
+       return sortT;
+    }else{
+      sortAllDates();
+      return null;
+    }
+     
+  }
 }
 static class PStranka {
   XML[] orgNames;
@@ -148,8 +226,15 @@ static class PStranka {
   }
   public void precistiGrupe(int d){
     for(GrupaBesed grupa : grupeBesed){
-       grupa.purgeLessThan(d);
+       grupa.purgeLessThan(grupa.lokalMax);
+     
+       //grupa.sortAllDates();
     }
+    for(GrupaBesed grupa : grupeBesed){
+      sortingThreads.add(grupa.threadIt());
+       //grupa.sortAllDates();
+    }
+   
     System.gc();
   }
   long kumulativaBesed = 0;

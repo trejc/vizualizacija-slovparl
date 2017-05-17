@@ -163,10 +163,19 @@ public void preberiSeje(){
        politiki.get(key).UrejeniDatumi = new TreeSet<String>(politiki.get(key).StBesedNaSejo.keySet());
   }
   println("purging");
+  long t0 = System.currentTimeMillis();
   for(String key : stranke.keySet()){
       stranke.get(key).precistiGrupe(Math.round(2035*0.1));
   }
-  println("purge done");
+  for(Thread t : sortingThreads){
+    try{
+      t.join();
+    }catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    
+  }
+  println("purge done, trajalo je: " + (System.currentTimeMillis()-t0) + " ms");
   println("done");
 }
 public void testStevilaBesed(){
@@ -253,11 +262,13 @@ void setup() {
         for(String datum : new TreeSet<String>(gBe.besede.keySet()) ){
           print(stra1 +"] "+ datum + ": ");
           println(gBe.vsePojavitve(datum));
-          /*
+          int top = 5;
           for(String beseda : gBe.besede.get(datum).keySet()){
+            if(top == 0) break;
+            top--;
             println("    "+ beseda + ", " + gBe.besede.get(datum).get(beseda));
           }
-          */
+          
         }
       }
     }

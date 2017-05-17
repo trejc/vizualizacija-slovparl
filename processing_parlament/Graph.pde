@@ -165,6 +165,12 @@ class Node {
         for(GrupaBesed gB: grupeBesed){
           vseBesede+=gB.vsePojavitve(datum); //prišteje se vse pojavitve besed za vsako grupo
         }
+        for(GrupaBesed gB: grupeBesed){
+          //dobi procent gB od vseh besed
+          //dobi procent besed gB znotraj procenta gB
+          
+        }
+
       }
       //println("Vse pojavitve besed za str " + data.getID() +":  " +vseBesede);
 
