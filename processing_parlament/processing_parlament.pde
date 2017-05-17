@@ -165,7 +165,7 @@ public void preberiSeje(){
   println("purging");
   long t0 = System.currentTimeMillis();
   for(String key : stranke.keySet()){
-      stranke.get(key).precistiGrupe(Math.round(2035*0.1));
+      stranke.get(key).precistiGrupe(Math.round(3));
   }
   for(Thread t : sortingThreads){
     try{

@@ -47,7 +47,6 @@ static class GrupaBesed{
   }
   boolean a = true;
   public final void purgeLessThan(int frek){
-    if(a) return;
     if(besede.size() == 0) return;
     HashMap<String,Boolean> wordsToPurge = new HashMap<String,Boolean>();
     HashMap<String,Integer> tmo1 =  besDoDatuma(besede.lastKey());
@@ -226,7 +225,7 @@ static class PStranka {
   }
   public void precistiGrupe(int d){
     for(GrupaBesed grupa : grupeBesed){
-       grupa.purgeLessThan(grupa.lokalMax);
+       grupa.purgeLessThan(d);
      
        //grupa.sortAllDates();
     }
