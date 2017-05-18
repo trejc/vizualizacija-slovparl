@@ -173,8 +173,12 @@ public void preberiSeje(){
     }catch (InterruptedException e) {
       e.printStackTrace();
     }
-    
+
   }
+      
+    for(String key : stranke.keySet()){
+      stranke.get(key).fPass();
+    }
   println("purge done, trajalo je: " + (System.currentTimeMillis()-t0) + " ms");
   println("done");
 }

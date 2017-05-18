@@ -124,6 +124,28 @@ static class GrupaBesed{
     stevecBessed+= besede.get(datum).size();
     vseBesede+=  besede.get(datum).size();
   }
+  public final void finalPass(){
+    //Skozi vse datume in prekopiraj iz prejšnjega, če ne obstaja
+    //HashMap<String, Integer> novDatum =  kopiraj(besede.get(prejDatum));
+    //println(datumi);
+    HashMap<String, Integer> lastDatum = null;
+    for(String datum : datumi){
+      if(!jeDatum(datum)){
+        //datum ne obstaja
+        if(lastDatum != null){
+          besede.put(datum,  lastDatum);
+        }else{
+          //Yah, jebiga
+          besede.put(datum,  new HashMap<String, Integer>());
+        }
+        
+      }else{
+        //datum obstaja
+        lastDatum=besede.get(datum);
+      }
+
+    }
+  }
   public final long vsePojavitve(String datum){
     if(!pojNaDatum.containsKey(datum)){
       //Za ta datum št besed še ni izračunano
@@ -270,6 +292,11 @@ static class PStranka {
   public void obdelajBesedo(String datum, String normiranaBeseda, String beseda ){
       for(GrupaBesed gr: grupeBesed){
         gr.AddWord(datum, beseda);
+      }
+  }
+  public void fPass(){
+    for(GrupaBesed gr: grupeBesed){
+        gr.finalPass();
       }
   }
   public String imeStranke(String full, String datum) { 

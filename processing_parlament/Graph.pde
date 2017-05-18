@@ -184,8 +184,10 @@ class Node {
             besede = gB.besede.get(datum_prikaza);
           }
           if(besede != null) {
+            int ii = 1;
             for(String beseda : besede.keySet()) {
-              float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede));
+               
+              float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede ));
               //println("stranka:" + this.data.imeStranke("init", datum) + " b:" + beseda + " %:" + percentage + " v:" + vseBesede + " st:" + besede.get(beseda));
               //println(start);
               
@@ -211,7 +213,7 @@ class Node {
                     translate(x, y);
                     rotate(start - percentage/2);
                     fill(255, 255, 255);
-                    text(besede.get(beseda) + " " + beseda, 8, textAscent()/4);
+                    text(besede.get(beseda) + " " + beseda , 8, textAscent()/4);
                     popMatrix();
                   }
                 }
