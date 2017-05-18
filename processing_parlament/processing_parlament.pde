@@ -1,7 +1,7 @@
- 
 import java.util.Map;
 import java.io.*;
 import java.util.*;
+
 public String [] getFileNames(){
   String [] imenaDatotek  = {
     "1990-05-07-ZbZdruDel-s001-01.xml",
@@ -186,20 +186,22 @@ public void testStevilaBesed(){
 }
 
 
-HashMap<String, Politik> politiki;
-HashMap<String, PStranka> stranke;
-ArrayList<String> datumi;
-float[][] barveBesed;
+static HashMap<String, Politik> politiki;
+static HashMap<String, PStranka> stranke;
+static HashMap<String, HashMap<String, Boolean>> grupe_besed;
+static ArrayList<String> datumi;
+static float[][] barveBesed;
 String datum_prikaza;
 Camera camera;
 Graph graph;
 DatumSlider slider;
 long stVnosovDatumov = 0;
+
 void setup() {
-   
   size(800, 600);
   stranke = new HashMap<String, PStranka>();
   politiki = new  HashMap<String, Politik>();
+  grupe_besed = new HashMap<String, HashMap<String, Boolean>>();
   datumi = new ArrayList<String>();
   camera = new Camera(0.0, 0.0);
   graph = new Graph();
@@ -234,6 +236,61 @@ void setup() {
       }
     }
   }
+  
+  //GRUPA.LABEL = 'gospodarstvo'
+  HashMap<String, Boolean> besede_grupe = new HashMap<String, Boolean>();
+  besede_grupe.put("zadruga", true);
+  besede_grupe.put("denar", true);
+  besede_grupe.put("finance", true);
+  besede_grupe.put("gospodarstvo", true);
+  besede_grupe.put("banka", true);
+  besede_grupe.put("posel", true);
+  besede_grupe.put("obrt", true);
+  
+  grupe_besed.put("gospodarstvo", besede_grupe);
+  
+  //GRUPA.LABEL = 'obramba'
+  besede_grupe = new HashMap<String, Boolean>();
+  besede_grupe.put("vojska", true);
+  besede_grupe.put("obramba", true);
+  besede_grupe.put("vojašnica", true);
+  besede_grupe.put("vojak", true);
+  besede_grupe.put("vojna", true);
+  besede_grupe.put("orožje", true);
+  besede_grupe.put("nabor", true);
+  
+  grupe_besed.put("obramba", besede_grupe);
+  
+  //GRUPA.LABEL = 'liberalizem'
+  besede_grupe = new HashMap<String, Boolean>();
+  besede_grupe.put("svoboda", true);
+  besede_grupe.put("enakopravnost", true);
+  besede_grupe.put("enotnost", true);
+  besede_grupe.put("ustava", true);
+  besede_grupe.put("demokracija", true);
+  besede_grupe.put("kapitalizem", true);
+  besede_grupe.put("liberalizem", true);
+  
+  grupe_besed.put("liberalizem", besede_grupe);
+  
+  //GRUPA.LABEL = 'socializem'
+  besede_grupe = new HashMap<String, Boolean>();
+  besede_grupe.put("delavec", true);
+  besede_grupe.put("lastnina", true);
+  besede_grupe.put("družba", true);
+  besede_grupe.put("skupnost", true);
+  besede_grupe.put("kanservatizem", true);
+  
+  grupe_besed.put("socializem", besede_grupe);
+  
+  //GRUPA.LABEL = 'nacionalizem'
+  besede_grupe = new HashMap<String, Boolean>();
+  besede_grupe.put("narod", true);
+  besede_grupe.put("pleme", true);
+  besede_grupe.put("nacija", true);
+  besede_grupe.put("država", true);
+  
+  grupe_besed.put("nacionalizem", besede_grupe);
   
   println(stranke.keySet());
   println("število strank:" + stranke.size());
@@ -281,14 +338,45 @@ void setup() {
   }
 
 }
+
+static boolean prviDatumKasnejsi(String datum1, String datum2) {
+  int leto1 = Integer.parseInt(datum1.substring(0, 4));
+  int leto2 = Integer.parseInt(datum2.substring(0, 4));
+  
+  if(leto1 == leto2) {
+    int mesec1 = datum1.length() > 5 ? Integer.parseInt(datum1.substring(5, 7)) : 1;
+    int mesec2 = datum2.length() > 5 ? Integer.parseInt(datum2.substring(5, 7)) : 1;
+    if(mesec1 == mesec2) {
+      int dan1 = datum1.length() > 8 ? Integer.parseInt(datum1.substring(8)) : 1;
+      int dan2 = datum2.length() > 8 ? Integer.parseInt(datum2.substring(8)) : 1;
+      if(dan1 <= dan2)
+        return false;
+      else
+        return true;
+    }else {
+      if(mesec1 > mesec2) 
+        return true;
+      else 
+        return false;
+    }
+  }else {
+    if(leto1 > leto2) 
+      return true;
+    else 
+      return false;
+  }
+}
+
 static void CRASH_APP(){
   double a = 1/0;
 }
+
 void update() {
   graph.separateNodes(100);
   slider.update();
   datum_prikaza = datumi.get(int(slider.getProc() * datumi.size()));
 }
+
 void draw() {
   update();
   
@@ -307,6 +395,7 @@ void draw() {
   popMatrix();
   slider.render(datum_prikaza);
 }
+
 void mouseWheel(MouseEvent event) {
   camera.x -= mouseX;
   camera.y -= mouseY;
@@ -317,10 +406,12 @@ void mouseWheel(MouseEvent event) {
   camera.x += mouseX;
   camera.y += mouseY;
 }
+
 void mousePressed() {
   if(slider.overEvent())
     slider.locked = true;
 }
+
 void mouseDragged(MouseEvent event) {
   if(!slider.locked) {
     camera.x += mouseX - pmouseX;

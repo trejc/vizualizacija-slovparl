@@ -74,10 +74,13 @@ static class GrupaBesed{
     wordsToPurge=null;
   }
   public boolean preveriBesedo(String beseda){
-    //if(a) return true;
-    if(beseda.equals("biti")) return false;
-    if(beseda.length() <= 3 ) return false; 
-    return true;
+    HashMap<String, Boolean> grupa = grupe_besed.get(this.labelGrupe);
+    if(grupa != null) {
+      if(grupa.containsKey(beseda)) {
+        return true;
+      }
+    }
+    return false;
   }
   public final void AddWord(String datum, String word){
     //preveri, če beseda spada v grupo
@@ -211,6 +214,8 @@ static class GrupaBesed{
      
   }
 }
+
+
 static class PStranka {
   XML[] orgNames;
   HashMap<String, Politik> politiki;
@@ -246,7 +251,7 @@ static class PStranka {
   public PStranka() {
     politiki = new HashMap<String, Politik>();
     grupeBesed = new ArrayList<GrupaBesed>();
-    dodajGrupe(new GrupaBesed("a"));
+    dodajGrupe(new GrupaBesed("gospodarstvo"), new GrupaBesed("liberalizem"), new GrupaBesed("socializem"), new GrupaBesed("obramba"), new GrupaBesed("nacionalizem"));
   }
   public HashMap<String, Integer> besedeNaDatum(String datum){
     return this.besede.get(datum);
@@ -268,49 +273,43 @@ static class PStranka {
       }
   }
   public String imeStranke(String full, String datum) { 
-    int leto = Integer.parseInt(datum.substring(0, 4));
-    int mesec = Integer.parseInt(datum.substring(5, 7));
-    int dan = Integer.parseInt(datum.substring(8));
-    
     for(XML orgName : orgNames) {
       if(orgName.getString("full") != null) {
         if(orgName.getString("full").equals(full)) {
-          if(orgName.getString("from") != null) {
-            String from_datum = orgName.getString("from");
-            int from_leto = Integer.parseInt(from_datum.substring(0, 4));
-            int from_mesec = Integer.parseInt(from_datum.substring(5, 7));
-            int from_dan = from_datum.length() > 8 ? Integer.parseInt(from_datum.substring(8)) : 1;
-            
-            if(from_leto < leto) {
-              return orgName.getContent();
-            }else if(from_leto == leto) {
-              if(from_mesec < mesec) {
-                return orgName.getContent();
-              }else if(from_mesec == mesec) {
-                if(from_dan < dan) {
+          String from_datum = orgName.getString("from");
+          String to_datum = orgName.getString("to");
+          if(from_datum != null) {
+            if(prviDatumKasnejsi(datum, from_datum)) {
+              if(to_datum != null) {
+                if(prviDatumKasnejsi(to_datum, datum)) {
                   return orgName.getContent();
                 }
+              }else {
+                return orgName.getContent();
               }
             }
-          }else if(orgName.getString("to") != null) {
-            String to_datum = orgName.getString("to");
-            int to_leto = Integer.parseInt(to_datum.substring(0, 4));
-            int to_mesec = Integer.parseInt(to_datum.substring(5, 7));
-            int to_dan = to_datum.length() > 8 ? Integer.parseInt(to_datum.substring(8)) : 1;
-            
-            if(to_leto > leto) {
+          }else if(to_datum != null) {
+            if(prviDatumKasnejsi(to_datum, datum)) {
               return orgName.getContent();
-            }else if(to_leto == leto) {
-              if(to_mesec > mesec) {
-                return orgName.getContent();
-              }else if(to_mesec == mesec) {
-                if(to_dan > dan) {
-                  return orgName.getContent();
-                }
-              }
+            }else {
+              return orgName.getContent();
             }
           }else {
-            return orgName.getContent();
+            from_datum = orgName.getString("notBefore");
+            to_datum = orgName.getString("notAfter");
+            if(from_datum != null) {
+              if(prviDatumKasnejsi(datum, from_datum)) {
+                if(to_datum != null) {
+                  if(prviDatumKasnejsi(to_datum, datum)) {
+                    return orgName.getContent();
+                  }
+                }else {
+                  return orgName.getContent();
+                }
+              }
+            }else {
+              return orgName.getContent();
+            }
           }
         }
       }else {

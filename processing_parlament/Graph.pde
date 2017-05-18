@@ -1,4 +1,3 @@
-
 class DatumSlider {
   int swidth, sheight;    // width and height of bar
   float xpos, ypos;       // x and y position of bar
@@ -8,6 +7,7 @@ class DatumSlider {
   boolean over;           // is the mouse over the slider?
   boolean locked;
   float ratio;
+  
   public DatumSlider (float xp, float yp, int sw, int sh, int l) {
     swidth = sw;
     sheight = sh;
@@ -21,6 +21,7 @@ class DatumSlider {
     sposMax = xpos + swidth - sheight/2 + 1;
     loose = l;
   }
+  
   void update() {
     if (overEvent()) {
       over = true;
@@ -37,9 +38,11 @@ class DatumSlider {
       spos = spos + (newspos-spos)/loose;
     }
   }
+  
   float constrain(float val, float minv, float maxv) {
     return min(max(val, minv), maxv);
   }
+  
   boolean overEvent() {
     if (mouseX > xpos && mouseX < xpos+swidth &&
        mouseY > ypos && mouseY < ypos+sheight) {
@@ -48,6 +51,7 @@ class DatumSlider {
       return false;
     }
   }
+  
   void render(String datum) {
     fill(255);
     stroke(0);
@@ -62,6 +66,7 @@ class DatumSlider {
     textSize(12);
     text(datum, spos - textWidth(datum)/2, ypos + 35);
   }
+  
   float getPos() {
     return spos * ratio;
   }
@@ -161,61 +166,57 @@ class Node {
       //Potrebno bo obdelati grupe besed
       ArrayList<GrupaBesed> grupeBesed = data.grupeBesed;
       long vseBesede = 0;
-      if(grupeBesed != null && grupeBesed.size() >0 ){
+      if(grupeBesed != null && grupeBesed.size() > 0){
         for(GrupaBesed gB: grupeBesed){
           vseBesede+=gB.vsePojavitve(datum); //prišteje se vse pojavitve besed za vsako grupo
-        }
-        for(GrupaBesed gB: grupeBesed){
-          //dobi procent gB od vseh besed
-          //dobi procent besed gB znotraj procenta gB
-          
-        }
-
-      }
-      //println("Vse pojavitve besed za str " + data.getID() +":  " +vseBesede);
-
-      if(besede != null) {
-        int vsota = 0;
-        for(int st : besede.values()) {
-          vsota += st;
         }
         
         int i = 0;
         float start = 0;
-        for(String beseda : besede.keySet()) {
-          float percentage = TWO_PI*float(besede.get(beseda))/float(vsota);
-          //println("stranka:" + this.data.imeStranke("init", datum) + " b:" + beseda + " %:" + percentage + " v:" + vsota + " st:" + besede.get(beseda));
-          
-          int barva = 0;
-          for(int j = 0; j < beseda.length(); j++) {
-            barva += beseda.charAt(j);
-          }
-          fill(barva*17%255, barva*13%255, barva*11%255, 95);
-          arc(x, y, radius, radius, start, start + percentage);
-          i = (i+13)%255;
-          start += percentage;
-          
-          if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
-            if(start == TWO_PI && start-percentage == 0) {
-              fill(255, 255, 255);
-              text(beseda, x - textWidth(beseda)/2, y + textAscent()/2);
-            }else {
-              float angle = atan2(mouseY - (y*cam.zoom+cam.y), mouseX - (x*cam.zoom+cam.x));
-              angle = angle < 0 ?  TWO_PI+angle : angle;
-              if(angle >= start - percentage && angle <= start) {
-                pushMatrix();
-                textSize(6);
-                translate(x, y);
-                rotate(start - percentage/2);
-                fill(255, 255, 255);
-                text(beseda, 8, textAscent()/4);
-                popMatrix();
+        for(GrupaBesed gB: grupeBesed){
+          float group_percentage = TWO_PI*float(int(gB.vsePojavitve(datum)))/float(int(vseBesede));
+          besede = gB.besede.get(datum);
+          if(besede != null) {
+            for(String beseda : besede.keySet()) {
+              float percentage = group_percentage*float(besede.get(beseda))/float(int(vseBesede));
+              //println("stranka:" + this.data.imeStranke("init", datum) + " b:" + beseda + " %:" + percentage + " v:" + vsota + " st:" + besede.get(beseda));
+              
+              int barva = 0;
+              for(int j = 0; j < beseda.length(); j++) {
+                barva += beseda.charAt(j);
+              }
+              fill(barva*17%255, barva*13%255, barva*11%255, 95);
+              arc(x, y, radius, radius, start, start + percentage);
+              i = (i+13)%255;
+              start += percentage;
+              
+              if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
+                if(start == TWO_PI && start-percentage == 0) {
+                  fill(255, 255, 255);
+                  text(beseda, x - textWidth(beseda)/2, y + textAscent()/2);
+                }else {
+                  float angle = atan2(mouseY - (y*cam.zoom+cam.y), mouseX - (x*cam.zoom+cam.x));
+                  angle = angle < 0 ?  TWO_PI+angle : angle;
+                  if(angle >= start - percentage && angle <= start) {
+                    pushMatrix();
+                    textSize(6);
+                    translate(x, y);
+                    rotate(start - percentage/2);
+                    fill(255, 255, 255);
+                    text(besede.get(beseda) + " " + beseda, 8, textAscent()/4);
+                    popMatrix();
+                  }
+                }
               }
             }
+          //dobi procent gB od vseh besed
+          //dobi procent besed gB znotraj procenta gB
+          
           }
         }
       }
-      
+      //println("Vse pojavitve besed za str " + data.getID() +":  " +vseBesede);
+
       if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
         //println("texty:" + text_y + " y:" + y + " dafak:" + (y - radius - 10) + " bool:" + (text_y > y - radius - 10));
         if(text_y < radius + 10) text_y += 4;
