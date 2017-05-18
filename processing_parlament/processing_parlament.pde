@@ -189,6 +189,7 @@ public void testStevilaBesed(){
 static HashMap<String, Politik> politiki;
 static HashMap<String, PStranka> stranke;
 static HashMap<String, HashMap<String, Boolean>> grupe_besed;
+static HashMap<String, int[]> barve_grup;
 static ArrayList<String> datumi;
 static float[][] barveBesed;
 String datum_prikaza;
@@ -202,6 +203,7 @@ void setup() {
   stranke = new HashMap<String, PStranka>();
   politiki = new  HashMap<String, Politik>();
   grupe_besed = new HashMap<String, HashMap<String, Boolean>>();
+  barve_grup = new HashMap<String, int[]>();
   datumi = new ArrayList<String>();
   camera = new Camera(0.0, 0.0);
   graph = new Graph();

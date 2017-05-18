@@ -123,12 +123,15 @@ class Node {
   PStranka data;
   ArrayList<Edge> edges;
   boolean drawable;
+  String datum_prikaza;
+  float text_y;
   
   public Node(float x, float y, PStranka s) {
     this.x = x;
     this.y = y;
     this.data = s;
     text_y = 0;
+    datum_prikaza = null;
     
     radius = 30;
     edges = new ArrayList<Edge>();
@@ -151,8 +154,8 @@ class Node {
     y += (dy * 0.35f);
   }
   
-  float text_y;
   void render(Camera cam, String datum) {
+    if(datum_prikaza == null) datum_prikaza = datum;
     String s;
     s = data.imeStranke("init", datum);
     
@@ -168,18 +171,23 @@ class Node {
       long vseBesede = 0;
       if(grupeBesed != null && grupeBesed.size() > 0){
         for(GrupaBesed gB: grupeBesed){
-          vseBesede+=gB.vsePojavitve(datum); //prišteje se vse pojavitve besed za vsako grupo
+          vseBesede+=gB.vsePojavitve(datum_prikaza); //prišteje se vse pojavitve besed za vsako grupo
         }
         
         int i = 0;
         float start = 0;
         for(GrupaBesed gB: grupeBesed){
-          float group_percentage = TWO_PI*float(int(gB.vsePojavitve(datum)))/float(int(vseBesede));
-          besede = gB.besede.get(datum);
+          if(gB.besede.containsKey(datum)) {
+            besede = gB.besede.get(datum);
+            datum_prikaza = datum;
+          }else {
+            besede = gB.besede.get(datum_prikaza);
+          }
           if(besede != null) {
             for(String beseda : besede.keySet()) {
-              float percentage = group_percentage*float(besede.get(beseda))/float(int(vseBesede));
-              //println("stranka:" + this.data.imeStranke("init", datum) + " b:" + beseda + " %:" + percentage + " v:" + vsota + " st:" + besede.get(beseda));
+              float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede));
+              //println("stranka:" + this.data.imeStranke("init", datum) + " b:" + beseda + " %:" + percentage + " v:" + vseBesede + " st:" + besede.get(beseda));
+              //println(start);
               
               int barva = 0;
               for(int j = 0; j < beseda.length(); j++) {

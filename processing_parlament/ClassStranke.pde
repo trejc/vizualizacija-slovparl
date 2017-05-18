@@ -138,7 +138,7 @@ static class GrupaBesed{
       pojNaDatum.put(datum, new Long(stNaDatum));
     }
     //Za ta datum je št besed že izračunano
-      return pojNaDatum.get(datum);
+    return pojNaDatum.get(datum);
   }
   public final HashMap<String, Integer> besDoDatuma(String datum){
     return besede.containsKey(datum) ? besede.get(datum): null;
