@@ -167,14 +167,7 @@ public void preberiSeje(){
   for(String key : stranke.keySet()){
       stranke.get(key).precistiGrupe(Math.round(3));
   }
-  for(Thread t : sortingThreads){
-    try{
-      t.join();
-    }catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-    
-  }
+  
   println("purge done, trajalo je: " + (System.currentTimeMillis()-t0) + " ms");
   println("done");
 }
@@ -248,8 +241,10 @@ void setup() {
   besede_grupe.put("banka", true);
   besede_grupe.put("posel", true);
   besede_grupe.put("obrt", true);
+  besede_grupe.put("kapital", true);
   
   grupe_besed.put("gospodarstvo", besede_grupe);
+  barve_grup.put("gospodarstvo", new int[]{0, 100, 100});
   
   //GRUPA.LABEL = 'obramba'
   besede_grupe = new HashMap<String, Boolean>();
@@ -262,7 +257,8 @@ void setup() {
   besede_grupe.put("nabor", true);
   
   grupe_besed.put("obramba", besede_grupe);
-  
+  barve_grup.put("obramba", new int[]{50, 100, 100});
+
   //GRUPA.LABEL = 'liberalizem'
   besede_grupe = new HashMap<String, Boolean>();
   besede_grupe.put("svoboda", true);
@@ -274,6 +270,7 @@ void setup() {
   besede_grupe.put("liberalizem", true);
   
   grupe_besed.put("liberalizem", besede_grupe);
+  barve_grup.put("liberalizem", new int[]{100, 100, 100});
   
   //GRUPA.LABEL = 'socializem'
   besede_grupe = new HashMap<String, Boolean>();
@@ -284,6 +281,7 @@ void setup() {
   besede_grupe.put("kanservatizem", true);
   
   grupe_besed.put("socializem", besede_grupe);
+  barve_grup.put("socializem", new int[]{300, 100, 100});
   
   //GRUPA.LABEL = 'nacionalizem'
   besede_grupe = new HashMap<String, Boolean>();
@@ -291,8 +289,13 @@ void setup() {
   besede_grupe.put("pleme", true);
   besede_grupe.put("nacija", true);
   besede_grupe.put("država", true);
+  besede_grupe.put("Slovenija", true);
+  besede_grupe.put("slovenec", true);
+  besede_grupe.put("slovenski", true);
   
   grupe_besed.put("nacionalizem", besede_grupe);
+  barve_grup.put("nacionalizem", new int[]{200, 100, 100});
+  
   
   println(stranke.keySet());
   println("število strank:" + stranke.size());
