@@ -285,7 +285,8 @@ void setup() {
   besede_grupe.put("lastnina", true);
   besede_grupe.put("družba", true);
   besede_grupe.put("skupnost", true);
-  besede_grupe.put("kanservatizem", true);
+  besede_grupe.put("konservatizem", true);
+  besede_grupe.put("kolektivizem", true);
   
   grupe_besed.put("socializem", besede_grupe);
   
@@ -295,8 +296,20 @@ void setup() {
   besede_grupe.put("pleme", true);
   besede_grupe.put("nacija", true);
   besede_grupe.put("država", true);
+  besede_grupe.put("Slovenija", true);
+  besede_grupe.put("slovenec", true);
+  besede_grupe.put("slovenski", true);
   
   grupe_besed.put("nacionalizem", besede_grupe);
+  
+  /**
+   * Tukilele se nastav barve (new int[]{hue, saturation, brightness})
+  **/
+  barve_grup.put("gospodarstvo", new int[]{0, 100, 100});
+  barve_grup.put("obramba", new int[]{50, 100, 100});
+  barve_grup.put("liberalizem", new int[]{100, 100, 100});
+  barve_grup.put("nacionalizem", new int[]{200, 100, 100});
+  barve_grup.put("socializem", new int[]{300, 100, 100});
   
   println(stranke.keySet());
   println("število strank:" + stranke.size());

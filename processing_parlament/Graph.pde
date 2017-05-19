@@ -155,7 +155,6 @@ class Node {
   }
   
   void render(Camera cam, String datum) {
-    if(datum_prikaza == null) datum_prikaza = datum;
     String s;
     s = data.imeStranke("init", datum);
     
@@ -171,34 +170,32 @@ class Node {
       long vseBesede = 0;
       if(grupeBesed != null && grupeBesed.size() > 0){
         for(GrupaBesed gB: grupeBesed){
-          vseBesede+=gB.vsePojavitve(datum_prikaza); //prišteje se vse pojavitve besed za vsako grupo
+          vseBesede+=gB.vsePojavitve(datum); //prišteje se vse pojavitve besed za vsako grupo
         }
         
         int i = 0;
+        int brightness_diff = 40;
         float start = 0;
         for(GrupaBesed gB: grupeBesed){
-          if(gB.besede.containsKey(datum)) {
-            besede = gB.besede.get(datum);
-            datum_prikaza = datum;
-          }else {
-            besede = gB.besede.get(datum_prikaza);
-          }
+          besede = gB.besede.get(datum);
+          int[] barva = barve_grup.get(gB.labelGrupe);
+          int shift_barve = 0;
           if(besede != null) {
             int ii = 1;
             for(String beseda : besede.keySet()) {
                
-              float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede ));
+              float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede));
               //println("stranka:" + this.data.imeStranke("init", datum) + " b:" + beseda + " %:" + percentage + " v:" + vseBesede + " st:" + besede.get(beseda));
               //println(start);
               
-              int barva = 0;
-              for(int j = 0; j < beseda.length(); j++) {
-                barva += beseda.charAt(j);
-              }
-              fill(barva*17%255, barva*13%255, barva*11%255, 95);
+              colorMode(HSB, 360, 175, 140);
+              fill(barva[0], barva[1], barva[2] - shift_barve);
               arc(x, y, radius, radius, start, start + percentage);
+              colorMode(RGB, 255, 255, 255);
+              
               i = (i+13)%255;
               start += percentage;
+              shift_barve += brightness_diff/besede.size();
               
               if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
                 if(start == TWO_PI && start-percentage == 0) {
