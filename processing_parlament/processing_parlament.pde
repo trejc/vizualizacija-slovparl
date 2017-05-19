@@ -192,7 +192,7 @@ public void testStevilaBesed(){
 
 static HashMap<String, Politik> politiki;
 static HashMap<String, PStranka> stranke;
-static HashMap<String, HashMap<String, Boolean>> grupe_besed;
+static HashMap<String, HashMap<String, Integer>> grupe_besed;
 static HashMap<String, int[]> barve_grup;
 static ArrayList<String> datumi;
 static float[][] barveBesed;
@@ -206,7 +206,7 @@ void setup() {
   size(800, 600);
   stranke = new HashMap<String, PStranka>();
   politiki = new  HashMap<String, Politik>();
-  grupe_besed = new HashMap<String, HashMap<String, Boolean>>();
+  grupe_besed = new HashMap<String, HashMap<String, Integer>>();
   barve_grup = new HashMap<String, int[]>();
   datumi = new ArrayList<String>();
   camera = new Camera(0.0, 0.0);
@@ -244,61 +244,62 @@ void setup() {
   }
   
   //GRUPA.LABEL = 'gospodarstvo'
-  HashMap<String, Boolean> besede_grupe = new HashMap<String, Boolean>();
-  besede_grupe.put("zadruga", true);
-  besede_grupe.put("denar", true);
-  besede_grupe.put("finance", true);
-  besede_grupe.put("gospodarstvo", true);
-  besede_grupe.put("banka", true);
-  besede_grupe.put("posel", true);
-  besede_grupe.put("obrt", true);
+  HashMap<String, Integer> besede_grupe = new HashMap<String, Integer>();
+  besede_grupe.put("zadruga", 1);
+  besede_grupe.put("denar", 2);
+  besede_grupe.put("finance", 3);
+  besede_grupe.put("gospodarstvo", 4);
+  besede_grupe.put("banka", 5);
+  besede_grupe.put("posel", 6);
+  besede_grupe.put("obrt", 7);
   
   grupe_besed.put("gospodarstvo", besede_grupe);
   
   //GRUPA.LABEL = 'obramba'
-  besede_grupe = new HashMap<String, Boolean>();
-  besede_grupe.put("vojska", true);
-  besede_grupe.put("obramba", true);
-  besede_grupe.put("vojašnica", true);
-  besede_grupe.put("vojak", true);
-  besede_grupe.put("vojna", true);
-  besede_grupe.put("orožje", true);
-  besede_grupe.put("nabor", true);
+  besede_grupe = new HashMap<String, Integer>();
+  besede_grupe.put("vojska", 1);
+  besede_grupe.put("obramba", 2);
+  besede_grupe.put("vojašnica", 3);
+  besede_grupe.put("vojak", 4);
+  besede_grupe.put("vojna", 5);
+  besede_grupe.put("orožje", 6);
+  besede_grupe.put("nabor", 7);
   
   grupe_besed.put("obramba", besede_grupe);
   
   //GRUPA.LABEL = 'liberalizem'
-  besede_grupe = new HashMap<String, Boolean>();
-  besede_grupe.put("svoboda", true);
-  besede_grupe.put("enakopravnost", true);
-  besede_grupe.put("enotnost", true);
-  besede_grupe.put("ustava", true);
-  besede_grupe.put("demokracija", true);
-  besede_grupe.put("kapitalizem", true);
-  besede_grupe.put("liberalizem", true);
+  besede_grupe = new HashMap<String, Integer>();
+  besede_grupe.put("svoboda", 1);
+  besede_grupe.put("enakopravnost", 2);
+  besede_grupe.put("enotnost", 3);
+  besede_grupe.put("ustava", 4);
+  besede_grupe.put("demokracija", 5);
+  besede_grupe.put("kapitalizem", 6);
+  besede_grupe.put("liberalizem", 7);
   
   grupe_besed.put("liberalizem", besede_grupe);
   
   //GRUPA.LABEL = 'socializem'
-  besede_grupe = new HashMap<String, Boolean>();
-  besede_grupe.put("delavec", true);
-  besede_grupe.put("lastnina", true);
-  besede_grupe.put("družba", true);
-  besede_grupe.put("skupnost", true);
-  besede_grupe.put("konservatizem", true);
-  besede_grupe.put("kolektivizem", true);
+  besede_grupe = new HashMap<String, Integer>();
+  besede_grupe.put("delavec", 1);
+  besede_grupe.put("lastnina", 2);
+  besede_grupe.put("družba", 3);
+  besede_grupe.put("skupnost", 4);
+  besede_grupe.put("konservatizem", 5);
+  besede_grupe.put("kolektivizem", 6);
+  besede_grupe.put("socializem", 7);
   
   grupe_besed.put("socializem", besede_grupe);
   
   //GRUPA.LABEL = 'nacionalizem'
-  besede_grupe = new HashMap<String, Boolean>();
-  besede_grupe.put("narod", true);
-  besede_grupe.put("pleme", true);
-  besede_grupe.put("nacija", true);
-  besede_grupe.put("država", true);
-  besede_grupe.put("Slovenija", true);
-  besede_grupe.put("slovenec", true);
-  besede_grupe.put("slovenski", true);
+  besede_grupe = new HashMap<String, Integer>();
+  besede_grupe.put("narod", 1);
+  besede_grupe.put("pleme", 2);
+  besede_grupe.put("nacija", 3);
+  besede_grupe.put("država", 4);
+  besede_grupe.put("Slovenija", 5);
+  besede_grupe.put("slovenec", 6);
+  besede_grupe.put("slovenski", 7);
   
   grupe_besed.put("nacionalizem", besede_grupe);
   

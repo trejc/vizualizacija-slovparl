@@ -74,7 +74,7 @@ static class GrupaBesed{
     wordsToPurge=null;
   }
   public boolean preveriBesedo(String beseda){
-    HashMap<String, Boolean> grupa = grupe_besed.get(this.labelGrupe);
+    HashMap<String, Integer> grupa = grupe_besed.get(this.labelGrupe);
     if(grupa != null) {
       if(grupa.containsKey(beseda)) {
         return true;

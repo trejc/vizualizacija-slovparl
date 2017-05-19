@@ -173,27 +173,21 @@ class Node {
           vseBesede+=gB.vsePojavitve(datum); //prišteje se vse pojavitve besed za vsako grupo
         }
         
-        int i = 0;
-        int brightness_diff = 40;
+        int brightness_diff = 55;
         float start = 0;
         for(GrupaBesed gB: grupeBesed){
           besede = gB.besede.get(datum);
           int[] barva = barve_grup.get(gB.labelGrupe);
           int shift_barve = 0;
           if(besede != null) {
-            int ii = 1;
             for(String beseda : besede.keySet()) {
-               
               float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede));
-              //println("stranka:" + this.data.imeStranke("init", datum) + " b:" + beseda + " %:" + percentage + " v:" + vseBesede + " st:" + besede.get(beseda));
-              //println(start);
               
-              colorMode(HSB, 360, 175, 140);
-              fill(barva[0], barva[1], barva[2] - shift_barve);
+              colorMode(HSB, 360, 175, 130);
+              fill(barva[0], barva[1], barva[2] - grupe_besed.get(gB.labelGrupe).get(beseda)*5);
               arc(x, y, radius, radius, start, start + percentage);
               colorMode(RGB, 255, 255, 255);
               
-              i = (i+13)%255;
               start += percentage;
               shift_barve += brightness_diff/besede.size();
               
@@ -210,7 +204,7 @@ class Node {
                     translate(x, y);
                     rotate(start - percentage/2);
                     fill(255, 255, 255);
-                    text(besede.get(beseda) + " " + beseda , 8, textAscent()/4);
+                    text(beseda , 8, textAscent()/4);
                     popMatrix();
                   }
                 }
