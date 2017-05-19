@@ -244,7 +244,6 @@ void setup() {
   besede_grupe.put("kapital", true);
   
   grupe_besed.put("gospodarstvo", besede_grupe);
-  barve_grup.put("gospodarstvo", new int[]{0, 100, 100});
   
   //GRUPA.LABEL = 'obramba'
   besede_grupe = new HashMap<String, Boolean>();
@@ -257,7 +256,6 @@ void setup() {
   besede_grupe.put("nabor", true);
   
   grupe_besed.put("obramba", besede_grupe);
-  barve_grup.put("obramba", new int[]{50, 100, 100});
 
   //GRUPA.LABEL = 'liberalizem'
   besede_grupe = new HashMap<String, Boolean>();
@@ -270,7 +268,6 @@ void setup() {
   besede_grupe.put("liberalizem", true);
   
   grupe_besed.put("liberalizem", besede_grupe);
-  barve_grup.put("liberalizem", new int[]{100, 100, 100});
   
   //GRUPA.LABEL = 'socializem'
   besede_grupe = new HashMap<String, Boolean>();
@@ -281,7 +278,6 @@ void setup() {
   besede_grupe.put("kanservatizem", true);
   
   grupe_besed.put("socializem", besede_grupe);
-  barve_grup.put("socializem", new int[]{300, 100, 100});
   
   //GRUPA.LABEL = 'nacionalizem'
   besede_grupe = new HashMap<String, Boolean>();
@@ -294,8 +290,15 @@ void setup() {
   besede_grupe.put("slovenski", true);
   
   grupe_besed.put("nacionalizem", besede_grupe);
-  barve_grup.put("nacionalizem", new int[]{200, 100, 100});
   
+  /**
+   * Tukilele se nastav barve (new int[]{hue, saturation, brightness})
+  **/
+  barve_grup.put("gospodarstvo", new int[]{0, 100, 100});
+  barve_grup.put("obramba", new int[]{50, 100, 100});
+  barve_grup.put("liberalizem", new int[]{100, 100, 100});
+  barve_grup.put("nacionalizem", new int[]{200, 100, 100});
+  barve_grup.put("socializem", new int[]{300, 100, 100});
   
   println(stranke.keySet());
   println("število strank:" + stranke.size());

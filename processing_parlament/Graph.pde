@@ -210,7 +210,7 @@ class Node {
                     translate(x, y);
                     rotate(start - percentage/2);
                     fill(255, 255, 255);
-                    text(besede.get(beseda) + " " + beseda, 8, textAscent()/4);
+                    text(beseda, 8, textAscent()/4);
                     popMatrix();
                   }
                 }
