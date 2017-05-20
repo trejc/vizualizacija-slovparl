@@ -294,3 +294,29 @@ class Graph {
     }
   }
 }
+class Legend{
+  int xPos;
+  int yPos;
+  public Legend(){
+
+  }
+  public Legend(int x, int y){
+    xPos=x;
+    yPos=y;
+  }
+  public void setup(){
+    
+    for(String labelGrupe : barve_grup.keySet()){
+      
+      
+    }
+  }
+  public void render(){
+    pushMatrix();
+    translate(xPos,yPos);
+
+    popMatrix();
+
+  }
+
+}

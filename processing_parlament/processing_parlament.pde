@@ -149,7 +149,7 @@ public void preberiSeje(){
    String [] imenaDatotek = getFileNames();
   //imenaDatotek.length
   print("0%");
-  
+  int d = imenaDatotek.length;
   for(int i = 0; i < imenaDatotek.length; i++){
     //println(folderPath+"/"+imenaDatotek[i]);
     XML xml = loadXML(folderPath+"/"+imenaDatotek[i]);
@@ -158,12 +158,13 @@ public void preberiSeje(){
     Politik.prestejBesede(body, imenaDatotek[i].substring(0,10), imenaDatotek[i].substring(imenaDatotek[i].length()-11,imenaDatotek[i].length()-7), politiki);
     if(Math.round((i/imenaDatotek.length)*10) == 5 ) print("50%");
     else System.out.print("=");
-    PROGRESS++;
+     
+    PROGRESS=(Math.round(((float) i/d)*342));
   }
   println("100%");
   for(String key : politiki.keySet()){
        politiki.get(key).UrejeniDatumi = new TreeSet<String>(politiki.get(key).StBesedNaSejo.keySet());
-       PROGRESS++;
+        
   }
   println("purging");
   long t0 = System.currentTimeMillis();
@@ -171,10 +172,13 @@ public void preberiSeje(){
       stranke.get(key).precistiGrupe(Math.round(3));
       
   }
+  d= sortingThreads.size();
+  int i = 0;
   for(Thread t : sortingThreads){
     try{
       t.join();
-      PROGRESS++;
+       i++;
+       PROGRESS=342 + Math.round(((float) i/d)*18);
     }catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -203,6 +207,7 @@ static ArrayList<String> datumi;
 static float[][] barveBesed;
 static boolean loaded;
 static String loadingText;
+static Legend legenda;
 static int WIDTH;
 static int HEIGHT;
 static int PROGRESS;
@@ -216,6 +221,7 @@ void setup() {
   WIDTH=800;
   HEIGHT=600;
   PROGRESS=0;
+ 
   size(800, 600);
   stranke = new HashMap<String, PStranka>();
   politiki = new  HashMap<String, Politik>();
@@ -243,7 +249,7 @@ void setup() {
         loadingText = "Prebiranje strank";
         XML[] listi_organizacij = xml.getChild("teiHeader").getChild("profileDesc").getChild("particDesc").getChildren("listOrg");
         for(XML lo : listi_organizacij) {
-          PROGRESS++;
+           
           if(lo.getChild("head").getContent().equals("Seznam političnih organizacij v Sloveniji")) {
             XML[] listi_politicnih_organizacij = lo.getChildren("listOrg");
             for(XML lpo : listi_politicnih_organizacij) {
@@ -260,7 +266,7 @@ void setup() {
             }
           }
         }
-        PROGRESS++;
+         
         loadingText = "Inicilizacija filtriranja";
         //GRUPA.LABEL = 'gospodarstvo'
         HashMap<String, Integer> besede_grupe = new HashMap<String, Integer>();
@@ -333,14 +339,14 @@ void setup() {
         
         println(stranke.keySet());
         println("število strank:" + stranke.size());
-        PROGRESS++;
+         
         loadingText = "Prebiranje politikov";
         if( Politik.naloziPolitike(xml,stranke,politiki)) System.out.println("nalaganje politikov koncano!\nŠtevilo neuvrščenih elementov: " + politiki.size());
         if(Politik.ImaZeStrankoException.stNapak > 0){ 
           println("št politikov z več strankami: " + Politik.ImaZeStrankoException.stNapak);
           //double a = 1/0;
         }
-        PROGRESS++;
+         
         /*nov način določanja barv!
         barveBesed = new float[PStranka.zanimiveBesede.size()][3];
         for(int i = 0; i < barveBesed.length; i++) {
@@ -351,7 +357,7 @@ void setup() {
         loadingText = "Prebiranje parlamentarnih sej";
          
         preberiSeje();
-        PROGRESS++;
+         
         //testStevilaBesed();
         if(true){
           println("printanje vseh besed ...");
@@ -374,12 +380,18 @@ void setup() {
             }
           }
         }
-        println("Progress: " + PROGRESS++);
+        legenda = new Legend();
+        legenda.setup();
+        println("Progress: " + PROGRESS);
        // println("pociscene besede: " + GrupaBesed.pocisceneBesede);
        // println("max pojavitev: " + GrupaBesed.max);
         loadingText = "Pripravljanje na izris";
+        int d =  graph.nodes.size();
+         int i = 0;
         for(Node n : graph.nodes) {
+           
           n.radius = n.data.politiki.size() + 30;
+   
         }
         delay(1000);
         loaded=true;
@@ -433,7 +445,7 @@ void updateLoading(){
   background(105);
 
   pushMatrix();
-     int d = (int)( (((float)PROGRESS)/477) *360);
+     int d = (int)(PROGRESS);
     fill(255, 255, 255,105);
     translate(WIDTH/2, HEIGHT/2);
     arc(0, 0, 400, 400, 0, d*PI/180 );
@@ -484,6 +496,7 @@ void draw() {
     
     popMatrix();
     slider.render(datum_prikaza);
+    legenda.render();
   }
 }
 
@@ -508,4 +521,5 @@ void mouseDragged(MouseEvent event) {
     camera.x += mouseX - pmouseX;
     camera.y += mouseY - pmouseY;
   }
+ 
 }
