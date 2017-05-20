@@ -176,61 +176,67 @@ class Node {
         int brightness_diff = 55;
         float start = 0;
         for(GrupaBesed gB: grupeBesed){
-          besede = gB.besede.get(datum);
-          int[] barva = barve_grup.get(gB.labelGrupe);
-          int shift_barve = 0;
-          if(besede != null) {
-            for(String beseda : besede.keySet()) {
-              float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede));
-              
-              colorMode(HSB, 360, 175, 130);
-              fill(barva[0], barva[1], barva[2] - grupe_besed.get(gB.labelGrupe).get(beseda)*5);
-              arc(x, y, radius, radius, start, start + percentage);
-              colorMode(RGB, 255, 255, 255);
-              
-              start += percentage;
-              shift_barve += brightness_diff/besede.size();
-              
-              if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
-                if(start == TWO_PI && start-percentage == 0) {
+            besede = gB.besede.get(datum);
+            int[] barva = barve_grup.get(gB.labelGrupe);
+            int shift_barve = 0;
+            if(besede != null) {
+              for(String beseda : besede.keySet()) {
+                float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede));
+                
+                colorMode(HSB, 360, 175, 130);
+                fill(barva[0], barva[1], barva[2] - grupe_besed.get(gB.labelGrupe).get(beseda)*5);
+                arc(x, y, radius, radius, start, start + percentage);
+                colorMode(RGB, 255, 255, 255);
+                
+                start += percentage;
+                shift_barve += brightness_diff/besede.size();
+              }
+            //dobi procent gB od vseh besed
+            //dobi procent besed gB znotraj procenta gB
+          }
+        }
+        
+        if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
+          if(text_y < radius + 10) text_y += 4;
+          s = data.imeStranke("yes", datum);
+          textSize(6);
+          start = 0;
+          for(GrupaBesed gB: grupeBesed) {
+            besede = gB.besede.get(datum);
+            if(besede != null) {
+              for(String beseda : besede.keySet()) {
+                float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede));
+                if(percentage == TWO_PI) {
                   fill(255, 255, 255);
                   text(beseda, x - textWidth(beseda)/2, y + textAscent()/2);
                 }else {
                   float angle = atan2(mouseY - (y*cam.zoom+cam.y), mouseX - (x*cam.zoom+cam.x));
                   angle = angle < 0 ?  TWO_PI+angle : angle;
-                  if(angle >= start - percentage && angle <= start) {
+                   println(start + " %:" + percentage + " /:" + angle);
+                  if(angle >= start && angle <= start + percentage) {
                     pushMatrix();
                     textSize(6);
                     translate(x, y);
-                    rotate(start - percentage/2);
+                    rotate(start + percentage/2);
                     fill(255, 255, 255);
                     text(beseda , 8, textAscent()/4);
                     popMatrix();
                   }
                 }
+                
+                start += percentage;
               }
             }
-          //dobi procent gB od vseh besed
-          //dobi procent besed gB znotraj procenta gB
-          
           }
+        }else {
+          textSize(14);
+          if(text_y > 0) text_y -= 1;
         }
-      }
-      //println("Vse pojavitve besed za str " + data.getID() +":  " +vseBesede);
-
-      if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
-        //println("texty:" + text_y + " y:" + y + " dafak:" + (y - radius - 10) + " bool:" + (text_y > y - radius - 10));
-        if(text_y < radius + 10) text_y += 4;
-        s = data.imeStranke("yes", datum);
-        textSize(6);
-      }else {
+          
         textSize(14);
-        if(text_y > 0) text_y -= 1;
+        fill(255,255,255);
+        text(s, (x - textWidth(s)/2), (y - text_y + textAscent()/2));
       }
-      
-      textSize(14);
-      fill(255,255,255);
-      text(s, (x - textWidth(s)/2), (y - text_y + textAscent()/2));
      }else {
       drawable = false;
     }
