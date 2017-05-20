@@ -196,6 +196,10 @@ static HashMap<String, HashMap<String, Integer>> grupe_besed;
 static HashMap<String, int[]> barve_grup;
 static ArrayList<String> datumi;
 static float[][] barveBesed;
+static boolean loaded;
+static String loadingText;
+static int WIDTH;
+static int HEIGHT;
 String datum_prikaza;
 Camera camera;
 Graph graph;
@@ -203,6 +207,8 @@ DatumSlider slider;
 long stVnosovDatumov = 0;
 
 void setup() {
+  WIDTH=800;
+  HEIGHT=600;
   size(800, 600);
   stranke = new HashMap<String, PStranka>();
   politiki = new  HashMap<String, Politik>();
@@ -212,150 +218,162 @@ void setup() {
   camera = new Camera(0.0, 0.0);
   graph = new Graph();
   slider = new DatumSlider(50, 20, 700, 20, 6);
-  
-  String prev_datum = null;
-  for(String file : getFileNames()) {
-    String datum = file.substring(0, 10);
-    if(prev_datum == null || !datum.equals(prev_datum)) {
-      datumi.add(datum);
-    }
-    
-    prev_datum = datum;
-  }
-  XML xml = loadXML("SlovParl/SlovParl.xml");
-  
-  XML[] listi_organizacij = xml.getChild("teiHeader").getChild("profileDesc").getChild("particDesc").getChildren("listOrg");
-  for(XML lo : listi_organizacij) {
-    if(lo.getChild("head").getContent().equals("Seznam političnih organizacij v Sloveniji")) {
-      XML[] listi_politicnih_organizacij = lo.getChildren("listOrg");
-      for(XML lpo : listi_politicnih_organizacij) {
-        if(lpo.getChild("head").getContent().equals("Politične stranke")) {
-          XML[] list_strank = lpo.getChildren("org");
-          for(XML stranka : list_strank) {
-            PStranka s = new PStranka();
-            s.dodaj_podatke_iz_xml(stranka);
-            stranke.put(stranka.getString("xml:id"), s);
-            s.id = stranka.getString("xml:id");
-            graph.nodes.add(new Node(300.0f + (float)Math.random()*5.0f, 300.0f + (float)Math.random()*5.0f, s));
-          }
-        }
-      }
-    }
-  }
-  
-  //GRUPA.LABEL = 'gospodarstvo'
-  HashMap<String, Integer> besede_grupe = new HashMap<String, Integer>();
-  besede_grupe.put("zadruga", 1);
-  besede_grupe.put("denar", 2);
-  besede_grupe.put("finance", 3);
-  besede_grupe.put("gospodarstvo", 4);
-  besede_grupe.put("banka", 5);
-  besede_grupe.put("posel", 6);
-  besede_grupe.put("obrt", 7);
-  
-  grupe_besed.put("gospodarstvo", besede_grupe);
-  
-  //GRUPA.LABEL = 'obramba'
-  besede_grupe = new HashMap<String, Integer>();
-  besede_grupe.put("vojska", 1);
-  besede_grupe.put("obramba", 2);
-  besede_grupe.put("vojašnica", 3);
-  besede_grupe.put("vojak", 4);
-  besede_grupe.put("vojna", 5);
-  besede_grupe.put("orožje", 6);
-  besede_grupe.put("nabor", 7);
-  
-  grupe_besed.put("obramba", besede_grupe);
-  
-  //GRUPA.LABEL = 'liberalizem'
-  besede_grupe = new HashMap<String, Integer>();
-  besede_grupe.put("svoboda", 1);
-  besede_grupe.put("enakopravnost", 2);
-  besede_grupe.put("enotnost", 3);
-  besede_grupe.put("ustava", 4);
-  besede_grupe.put("demokracija", 5);
-  besede_grupe.put("kapitalizem", 6);
-  besede_grupe.put("liberalizem", 7);
-  
-  grupe_besed.put("liberalizem", besede_grupe);
-  
-  //GRUPA.LABEL = 'socializem'
-  besede_grupe = new HashMap<String, Integer>();
-  besede_grupe.put("delavec", 1);
-  besede_grupe.put("lastnina", 2);
-  besede_grupe.put("družba", 3);
-  besede_grupe.put("skupnost", 4);
-  besede_grupe.put("konservatizem", 5);
-  besede_grupe.put("kolektivizem", 6);
-  besede_grupe.put("socializem", 7);
-  
-  grupe_besed.put("socializem", besede_grupe);
-  
-  //GRUPA.LABEL = 'nacionalizem'
-  besede_grupe = new HashMap<String, Integer>();
-  besede_grupe.put("narod", 1);
-  besede_grupe.put("pleme", 2);
-  besede_grupe.put("nacija", 3);
-  besede_grupe.put("država", 4);
-  besede_grupe.put("Slovenija", 5);
-  besede_grupe.put("slovenec", 6);
-  besede_grupe.put("slovenski", 7);
-  
-  grupe_besed.put("nacionalizem", besede_grupe);
-  
-  /**
-   * Tukilele se nastav barve (new int[]{hue, saturation, brightness})
-  **/
-  barve_grup.put("gospodarstvo", new int[]{0, 100, 100});
-  barve_grup.put("obramba", new int[]{50, 100, 100});
-  barve_grup.put("liberalizem", new int[]{100, 100, 100});
-  barve_grup.put("nacionalizem", new int[]{200, 100, 100});
-  barve_grup.put("socializem", new int[]{300, 100, 100});
-  
-  println(stranke.keySet());
-  println("število strank:" + stranke.size());
-  if( Politik.naloziPolitike(xml,stranke,politiki)) System.out.println("nalaganje politikov koncano!\nŠtevilo neuvrščenih elementov: " + politiki.size());
-  if(Politik.ImaZeStrankoException.stNapak > 0){ 
-    println("št politikov z več strankami: " + Politik.ImaZeStrankoException.stNapak);
-    //double a = 1/0;
-  }
-  /*nov način določanja barv!
-  barveBesed = new float[PStranka.zanimiveBesede.size()][3];
-  for(int i = 0; i < barveBesed.length; i++) {
-    barveBesed[i] = new float[]{random(255), random(255), random(255)};
-  }
-  */
-  println("branje sej ...");
-  preberiSeje();
-  
-  //testStevilaBesed();
-  if(true){
-    println("printanje vseh besed ...");
-    for(String stra1: stranke.keySet()){
-      //HashMap<String, Integer>
-      ArrayList<GrupaBesed> grupe = stranke.get(stra1).grupeBesed;
-      for(GrupaBesed gBe: grupe){
-        println(gBe.labelGrupe);
-        for(String datum : new TreeSet<String>(gBe.besede.keySet()) ){
-          print(stra1 +"] "+ datum + ": ");
-          println(gBe.vsePojavitve(datum));
-          int top = 5;
-          for(String beseda : gBe.besede.get(datum).keySet()){
-            if(top == 0) break;
-            top--;
-            println("    "+ beseda + ", " + gBe.besede.get(datum).get(beseda));
+  loaded = false;
+  loadingText = "";
+  Thread a = new Thread(){
+    public void run(){
+
+      String prev_datum = null;
+        for(String file : getFileNames()) {
+          String datum = file.substring(0, 10);
+          if(prev_datum == null || !datum.equals(prev_datum)) {
+            datumi.add(datum);
           }
           
+          prev_datum = datum;
         }
-      }
+        XML xml = loadXML("SlovParl/SlovParl.xml");
+        loadingText = "Prebiranje strank";
+        XML[] listi_organizacij = xml.getChild("teiHeader").getChild("profileDesc").getChild("particDesc").getChildren("listOrg");
+        for(XML lo : listi_organizacij) {
+          if(lo.getChild("head").getContent().equals("Seznam političnih organizacij v Sloveniji")) {
+            XML[] listi_politicnih_organizacij = lo.getChildren("listOrg");
+            for(XML lpo : listi_politicnih_organizacij) {
+              if(lpo.getChild("head").getContent().equals("Politične stranke")) {
+                XML[] list_strank = lpo.getChildren("org");
+                for(XML stranka : list_strank) {
+                  PStranka s = new PStranka();
+                  s.dodaj_podatke_iz_xml(stranka);
+                  stranke.put(stranka.getString("xml:id"), s);
+                  s.id = stranka.getString("xml:id");
+                  graph.nodes.add(new Node(300.0f + (float)Math.random()*5.0f, 300.0f + (float)Math.random()*5.0f, s));
+                }
+              }
+            }
+          }
+        }
+        loadingText = "Inicilizacija filtriranja";
+        //GRUPA.LABEL = 'gospodarstvo'
+        HashMap<String, Integer> besede_grupe = new HashMap<String, Integer>();
+        besede_grupe.put("zadruga", 1);
+        besede_grupe.put("denar", 2);
+        besede_grupe.put("finance", 3);
+        besede_grupe.put("gospodarstvo", 4);
+        besede_grupe.put("banka", 5);
+        besede_grupe.put("posel", 6);
+        besede_grupe.put("obrt", 7);
+        
+        grupe_besed.put("gospodarstvo", besede_grupe);
+        
+        //GRUPA.LABEL = 'obramba'
+        besede_grupe = new HashMap<String, Integer>();
+        besede_grupe.put("vojska", 1);
+        besede_grupe.put("obramba", 2);
+        besede_grupe.put("vojašnica", 3);
+        besede_grupe.put("vojak", 4);
+        besede_grupe.put("vojna", 5);
+        besede_grupe.put("orožje", 6);
+        besede_grupe.put("nabor", 7);
+        
+        grupe_besed.put("obramba", besede_grupe);
+        
+        //GRUPA.LABEL = 'liberalizem'
+        besede_grupe = new HashMap<String, Integer>();
+        besede_grupe.put("svoboda", 1);
+        besede_grupe.put("enakopravnost", 2);
+        besede_grupe.put("enotnost", 3);
+        besede_grupe.put("ustava", 4);
+        besede_grupe.put("demokracija", 5);
+        besede_grupe.put("kapitalizem", 6);
+        besede_grupe.put("liberalizem", 7);
+        
+        grupe_besed.put("liberalizem", besede_grupe);
+        
+        //GRUPA.LABEL = 'socializem'
+        besede_grupe = new HashMap<String, Integer>();
+        besede_grupe.put("delavec", 1);
+        besede_grupe.put("lastnina", 2);
+        besede_grupe.put("družba", 3);
+        besede_grupe.put("skupnost", 4);
+        besede_grupe.put("konservatizem", 5);
+        besede_grupe.put("kolektivizem", 6);
+        besede_grupe.put("socializem", 7);
+        
+        grupe_besed.put("socializem", besede_grupe);
+        
+        //GRUPA.LABEL = 'nacionalizem'
+        besede_grupe = new HashMap<String, Integer>();
+        besede_grupe.put("narod", 1);
+        besede_grupe.put("pleme", 2);
+        besede_grupe.put("nacija", 3);
+        besede_grupe.put("država", 4);
+        besede_grupe.put("Slovenija", 5);
+        besede_grupe.put("slovenec", 6);
+        besede_grupe.put("slovenski", 7);
+        
+        grupe_besed.put("nacionalizem", besede_grupe);
+        
+        /**
+        * Tukilele se nastav barve (new int[]{hue, saturation, brightness})
+        **/
+        barve_grup.put("gospodarstvo", new int[]{0, 100, 100});
+        barve_grup.put("obramba", new int[]{50, 100, 100});
+        barve_grup.put("liberalizem", new int[]{100, 100, 100});
+        barve_grup.put("nacionalizem", new int[]{200, 100, 100});
+        barve_grup.put("socializem", new int[]{300, 100, 100});
+        
+        println(stranke.keySet());
+        println("število strank:" + stranke.size());
+        loadingText = "Prebiranje politikov";
+        if( Politik.naloziPolitike(xml,stranke,politiki)) System.out.println("nalaganje politikov koncano!\nŠtevilo neuvrščenih elementov: " + politiki.size());
+        if(Politik.ImaZeStrankoException.stNapak > 0){ 
+          println("št politikov z več strankami: " + Politik.ImaZeStrankoException.stNapak);
+          //double a = 1/0;
+        }
+        /*nov način določanja barv!
+        barveBesed = new float[PStranka.zanimiveBesede.size()][3];
+        for(int i = 0; i < barveBesed.length; i++) {
+          barveBesed[i] = new float[]{random(255), random(255), random(255)};
+        }
+        */
+        println("branje sej ...");
+        loadingText = "Prebiranje parlamentarnih sej";
+         
+        preberiSeje();
+        
+        //testStevilaBesed();
+        if(true){
+          println("printanje vseh besed ...");
+          for(String stra1: stranke.keySet()){
+            //HashMap<String, Integer>
+            ArrayList<GrupaBesed> grupe = stranke.get(stra1).grupeBesed;
+            for(GrupaBesed gBe: grupe){
+              println(gBe.labelGrupe);
+              for(String datum : new TreeSet<String>(gBe.besede.keySet()) ){
+                print(stra1 +"] "+ datum + ": ");
+                println(gBe.vsePojavitve(datum));
+                int top = 5;
+                for(String beseda : gBe.besede.get(datum).keySet()){
+                  if(top == 0) break;
+                  top--;
+                  println("    "+ beseda + ", " + gBe.besede.get(datum).get(beseda));
+                }
+                
+              }
+            }
+          }
+        }
+        println("vse besede: " + GrupaBesed.vseBesede);
+        println("pociscene besede: " + GrupaBesed.pocisceneBesede);
+        println("max pojavitev: " + GrupaBesed.max);
+        loadingText = "Pripravljanje na izris";
+        for(Node n : graph.nodes) {
+          n.radius = n.data.politiki.size() + 30;
+        }
+        loaded=true;
     }
-  }
-  println("vse besede: " + GrupaBesed.vseBesede);
-  println("pociscene besede: " + GrupaBesed.pocisceneBesede);
-  println("max pojavitev: " + GrupaBesed.max);
-  for(Node n : graph.nodes) {
-    n.radius = n.data.politiki.size() + 30;
-  }
+  };
+   a.start();
 
 }
 
@@ -396,24 +414,52 @@ void update() {
   slider.update();
   datum_prikaza = datumi.get(int(slider.getProc() * datumi.size()));
 }
-
-void draw() {
-  update();
-  
-  pushMatrix();
-  translate(camera.x, camera.y);
-  scale(camera.zoom);
-  
+ 
+void updateLoading(){
   background(105);
-  noStroke();
-  smooth();
-  
-  for(Node n : graph.nodes) {
-    n.render(camera, datum_prikaza);
-  }
-  
+  pushMatrix();
+  textSize(70);
+  translate(WIDTH/2- textWidth("NALAGAM")/2, HEIGHT/2);
+  //rotate(start - percentage/2);
+   fill(255, 255, 255);
+  text("NALAGAM" , 8, textAscent()/4);
   popMatrix();
-  slider.render(datum_prikaza);
+   pushMatrix();
+  textSize(25);
+  
+  translate(WIDTH/2- textWidth(loadingText)/2, HEIGHT/2+80);
+  
+  fill(105);
+  float t = textWidth(loadingText);
+  
+  stroke(0,0);
+  rect(-50, -40, t+t/2, 80);
+   fill(255, 255, 255);
+  text(loadingText , 8, textAscent()/4);
+  popMatrix();
+}
+void draw() {
+  if(!loaded){
+    updateLoading();
+    
+  }else{
+    update();
+    
+    pushMatrix();
+    translate(camera.x, camera.y);
+    scale(camera.zoom);
+    
+    background(105);
+    noStroke();
+    smooth();
+    
+    for(Node n : graph.nodes) {
+      n.render(camera, datum_prikaza);
+    }
+    
+    popMatrix();
+    slider.render(datum_prikaza);
+  }
 }
 
 void mouseWheel(MouseEvent event) {
