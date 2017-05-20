@@ -183,7 +183,7 @@ class Node {
               for(String beseda : besede.keySet()) {
                 float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede));
                 
-                colorMode(HSB, 360, 175, 130);
+                colorMode(HSB, 360, 100, 100);
                 fill(barva[0], barva[1], barva[2] - grupe_besed.get(gB.labelGrupe).get(beseda)*5);
                 arc(x, y, radius, radius, start, start + percentage);
                 colorMode(RGB, 255, 255, 255);
@@ -219,7 +219,18 @@ class Node {
                     translate(x, y);
                     rotate(start + percentage/2);
                     fill(255, 255, 255);
-                    text(beseda , 8, textAscent()/4);
+                    
+                    float deg = degrees(start + percentage/2);
+                    if(deg >= 130.0f && deg <= 230) {
+                      pushMatrix();
+                      rotate(PI);
+                      textAlign(RIGHT);
+                      text(beseda , -8, textAscent()/4);
+                      textAlign(LEFT);
+                      popMatrix();
+                    }else {
+                      text(beseda , 8, textAscent()/4);
+                    }
                     popMatrix();
                   }
                 }
