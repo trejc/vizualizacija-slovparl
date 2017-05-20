@@ -334,9 +334,11 @@ class Legend{
   int grSize;
   int width;
   int height;
-  private int vertPad = 5;
+  int scaleLeg= 2;
+  private int vertPad = 15;
   private int horPad = 5;
-  
+  private int horIconPad = 10;
+  private int horIconRad = 5;
   HashMap<String,int[]> lokalneBarve;
   public Legend(){
     width = 10;
@@ -363,9 +365,19 @@ class Legend{
       height=Math.round(textAscent())+vertPad*2;
       println(width + " || " + height);
     popMatrix();
+    pushMatrix();
+        textSize(grSize);
     for(String labelGrupe : barve_grup.keySet()){
-      lokalneBarve.put(Character.toUpperCase(labelGrupe.charAt(0))+labelGrupe.substring(1, labelGrupe.length()), barve_grup.get(labelGrupe));  
+      String tmp = Character.toUpperCase(labelGrupe.charAt(0))+labelGrupe.substring(1, labelGrupe.length());
+      lokalneBarve.put(tmp, barve_grup.get(labelGrupe));  
+      int tmpW = Math.round(textWidth(tmp)) +horPad*2+horIconPad;
+      
+      width = width < tmpW ? tmpW : width;
+      height+=  vertPad;         
+      
+      
     }
+    popMatrix();
     println(lokalneBarve.keySet());
   }
   
@@ -373,13 +385,25 @@ class Legend{
     pushMatrix();
       //ozadje legende
       translate(xPos,yPos);
+      scale(scaleLeg);
       fill(255,200);
       rect(0,0,width,height);
       pushMatrix();
-        translate(horPad,vertPad);
+        translate(horPad,vertPad+textAscent()/2);
         textSize(titleSIze);
         fill(0);
         text("LEGENDA:",0 ,0);
+        textSize(grSize);
+        colorMode(HSB, 360, 100, 100);  
+        for(String label: lokalneBarve.keySet()){
+           translate(0, vertPad);
+           int[] cl = lokalneBarve.get(label);
+           fill(cl[0], cl[1], cl[2]);
+           rect(0, 0-textAscent()*0.75,horIconRad, horIconRad);
+           fill(0);
+           text(label,horIconPad ,0);
+        }
+        colorMode(RGB, 255, 255, 255);
       popMatrix();
     popMatrix();
 

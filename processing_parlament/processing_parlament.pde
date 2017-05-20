@@ -523,11 +523,11 @@ void draw() {
     for(Edge e : graph.edges) {
       e.render();
     }
-    
+    legenda.render(); 
     for(Node n : graph.nodes) {
       n.render(camera, datum_prikaza);
     }
-    legenda.render(); 
+    
     popMatrix();
     slider.render(datum_prikaza);
     
