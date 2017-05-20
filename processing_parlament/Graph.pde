@@ -389,11 +389,11 @@ class Legend{
       translate(xPos,yPos);
       scale(scaleLeg);
       fill(255,200);
-      rect(0,0,width,height);
+      //rect(0,0,width,height);
       pushMatrix();
         translate(horPad,vertPad+textAscent()/2);
         textSize(titleSIze);
-        fill(0);
+        fill(240);
         text("LEGENDA:",0 ,0);
         textSize(grSize);
         colorMode(HSB, 360, 100, 100);  
@@ -401,9 +401,11 @@ class Legend{
            translate(0, vertPad);
            int[] cl = lokalneBarve.get(label);
            fill(cl[0], cl[1], cl[2]);
+           stroke(0, 0, 90);
            rect(0, 0-textAscent()*0.75,horIconRad, horIconRad);
-           fill(0);
-           text(label,horIconPad ,0);
+           fill(0, 0, 80);
+           text(label, horIconPad ,0);
+           noStroke();
         }
         colorMode(RGB, 255, 255, 255);
       popMatrix();
