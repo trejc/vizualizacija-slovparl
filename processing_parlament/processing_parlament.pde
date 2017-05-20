@@ -262,6 +262,7 @@ void setup() {
         }
         PROGRESS++;
         loadingText = "Inicilizacija filtriranja";
+        
         //GRUPA.LABEL = 'gospodarstvo'
         HashMap<String, Integer> besede_grupe = new HashMap<String, Integer>();
         besede_grupe.put("zadruga", 1);
@@ -325,11 +326,13 @@ void setup() {
         /**
         * Tukilele se nastav barve (new int[]{hue, saturation, brightness})
         **/
-        barve_grup.put("gospodarstvo", new int[]{0, 100, 100});
-        barve_grup.put("obramba", new int[]{50, 100, 100});
-        barve_grup.put("liberalizem", new int[]{100, 100, 100});
-        barve_grup.put("nacionalizem", new int[]{200, 100, 100});
-        barve_grup.put("socializem", new int[]{300, 100, 100});
+        int s = 60;
+        int b = 80;
+        barve_grup.put("gospodarstvo", new int[]{0, s, b});
+        barve_grup.put("obramba", new int[]{50, s, b});
+        barve_grup.put("liberalizem", new int[]{100, s, b});
+        barve_grup.put("nacionalizem", new int[]{200, s, b});
+        barve_grup.put("socializem", new int[]{300, s, b});
         
         println(stranke.keySet());
         println("število strank:" + stranke.size());
