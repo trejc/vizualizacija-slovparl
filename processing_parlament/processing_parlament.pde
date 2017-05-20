@@ -384,7 +384,7 @@ void setup() {
             }
           }
         }
-        legenda = new Legend();
+        legenda = new Legend(500, 500,10,7);
         legenda.setup();
         println("Progress: " + PROGRESS);
        // println("pociscene besede: " + GrupaBesed.pocisceneBesede);
@@ -525,10 +525,10 @@ void draw() {
     for(Node n : graph.nodes) {
       n.render(camera, datum_prikaza);
     }
-    
+    legenda.render(); 
     popMatrix();
     slider.render(datum_prikaza);
-    legenda.render();
+    
   }
 }
 

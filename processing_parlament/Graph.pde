@@ -313,25 +313,58 @@ class Graph {
 }
 class Legend{
   int xPos;
-  int yPos;
+  int yPos; 
+  int titleSIze;
+  int grSize;
+  int width;
+  int height;
+  private int vertPad = 5;
+  private int horPad = 5;
+  
+  HashMap<String,int[]> lokalneBarve;
   public Legend(){
-
+    width = 10;
+    height=10;
+    xPos = 0;
+    yPos = 0;
+    titleSIze=10;
+    grSize = 7;
+    lokalneBarve = new HashMap<String,int[]>();
   }
-  public Legend(int x, int y){
+  public Legend(int x, int y, int ts, int gs){
     xPos=x;
     yPos=y;
+    titleSIze = ts;
+    grSize = gs;
+    lokalneBarve = new HashMap<String,int[]>();
+    width = 10;
+    height=10;
   }
   public void setup(){
-    
+    pushMatrix();
+      textSize(titleSIze);
+      width=Math.round(textWidth("LEGENDA:"))+horPad*2;
+      height=Math.round(textAscent())+vertPad*2;
+      println(width + " || " + height);
+    popMatrix();
     for(String labelGrupe : barve_grup.keySet()){
-      
-      
+      lokalneBarve.put(Character.toUpperCase(labelGrupe.charAt(0))+labelGrupe.substring(1, labelGrupe.length()), barve_grup.get(labelGrupe));  
     }
+    println(lokalneBarve.keySet());
   }
+  
   public void render(){
     pushMatrix();
-    translate(xPos,yPos);
-
+      //ozadje legende
+      translate(xPos,yPos);
+      fill(255,200);
+      rect(0,0,width,height);
+      pushMatrix();
+        translate(horPad,vertPad);
+        textSize(titleSIze);
+        fill(0);
+        text("LEGENDA:",0 ,0);
+      popMatrix();
     popMatrix();
 
   }
