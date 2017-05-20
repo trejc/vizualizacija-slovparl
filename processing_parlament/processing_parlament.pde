@@ -211,6 +211,7 @@ static Legend legenda;
 static int WIDTH;
 static int HEIGHT;
 static int PROGRESS;
+static Node node_selected;
 String datum_prikaza;
 Camera camera;
 Graph graph;
@@ -231,6 +232,7 @@ void setup() {
   datumi = new ArrayList<String>();
   camera = new Camera(0.0, 0.0);
   graph = new Graph();
+  node_selected = null;
   slider = new DatumSlider(50, 20, 700, 20, 6);
   loaded = false;
   loadingText = "";
@@ -543,6 +545,10 @@ void mouseWheel(MouseEvent event) {
   camera.y += mouseY;
 }
 
+void mouseReleased() {
+  node_selected = null;
+}
+
 void mousePressed() {
   if(slider.overEvent()) {
     slider.locked = true;
@@ -550,7 +556,7 @@ void mousePressed() {
 }
 
 void mouseDragged(MouseEvent event) {
-  if(!slider.locked) {
+  if(!slider.locked && node_selected == null) {
     camera.x += mouseX - pmouseX;
     camera.y += mouseY - pmouseY;
   }
