@@ -386,7 +386,7 @@ void setup() {
             }
           }
         }
-        legenda = new Legend(500, 500,10,7);
+        legenda = new Legend(500, 500,10,7,2);
         legenda.setup();
         println("Progress: " + PROGRESS);
        // println("pociscene besede: " + GrupaBesed.pocisceneBesede);

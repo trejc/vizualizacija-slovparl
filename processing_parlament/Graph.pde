@@ -347,9 +347,10 @@ class Legend{
     yPos = 0;
     titleSIze=10;
     grSize = 7;
+    scaleLeg= 2;
     lokalneBarve = new HashMap<String,int[]>();
   }
-  public Legend(int x, int y, int ts, int gs){
+  public Legend(int x, int y, int ts, int gs, int sc){
     xPos=x;
     yPos=y;
     titleSIze = ts;
@@ -357,6 +358,7 @@ class Legend{
     lokalneBarve = new HashMap<String,int[]>();
     width = 10;
     height=10;
+    scaleLeg= sc;
   }
   public void setup(){
     pushMatrix();
