@@ -149,6 +149,7 @@ public void preberiSeje(){
    String [] imenaDatotek = getFileNames();
   //imenaDatotek.length
   print("0%");
+  
   for(int i = 0; i < imenaDatotek.length; i++){
     //println(folderPath+"/"+imenaDatotek[i]);
     XML xml = loadXML(folderPath+"/"+imenaDatotek[i]);
@@ -157,19 +158,23 @@ public void preberiSeje(){
     Politik.prestejBesede(body, imenaDatotek[i].substring(0,10), imenaDatotek[i].substring(imenaDatotek[i].length()-11,imenaDatotek[i].length()-7), politiki);
     if(Math.round((i/imenaDatotek.length)*10) == 5 ) print("50%");
     else System.out.print("=");
+    PROGRESS++;
   }
   println("100%");
   for(String key : politiki.keySet()){
        politiki.get(key).UrejeniDatumi = new TreeSet<String>(politiki.get(key).StBesedNaSejo.keySet());
+       PROGRESS++;
   }
   println("purging");
   long t0 = System.currentTimeMillis();
   for(String key : stranke.keySet()){
       stranke.get(key).precistiGrupe(Math.round(3));
+      
   }
   for(Thread t : sortingThreads){
     try{
       t.join();
+      PROGRESS++;
     }catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -200,6 +205,7 @@ static boolean loaded;
 static String loadingText;
 static int WIDTH;
 static int HEIGHT;
+static int PROGRESS;
 String datum_prikaza;
 Camera camera;
 Graph graph;
@@ -209,6 +215,7 @@ long stVnosovDatumov = 0;
 void setup() {
   WIDTH=800;
   HEIGHT=600;
+  PROGRESS=0;
   size(800, 600);
   stranke = new HashMap<String, PStranka>();
   politiki = new  HashMap<String, Politik>();
@@ -236,6 +243,7 @@ void setup() {
         loadingText = "Prebiranje strank";
         XML[] listi_organizacij = xml.getChild("teiHeader").getChild("profileDesc").getChild("particDesc").getChildren("listOrg");
         for(XML lo : listi_organizacij) {
+          PROGRESS++;
           if(lo.getChild("head").getContent().equals("Seznam političnih organizacij v Sloveniji")) {
             XML[] listi_politicnih_organizacij = lo.getChildren("listOrg");
             for(XML lpo : listi_politicnih_organizacij) {
@@ -252,6 +260,7 @@ void setup() {
             }
           }
         }
+        PROGRESS++;
         loadingText = "Inicilizacija filtriranja";
         //GRUPA.LABEL = 'gospodarstvo'
         HashMap<String, Integer> besede_grupe = new HashMap<String, Integer>();
@@ -324,12 +333,14 @@ void setup() {
         
         println(stranke.keySet());
         println("število strank:" + stranke.size());
+        PROGRESS++;
         loadingText = "Prebiranje politikov";
         if( Politik.naloziPolitike(xml,stranke,politiki)) System.out.println("nalaganje politikov koncano!\nŠtevilo neuvrščenih elementov: " + politiki.size());
         if(Politik.ImaZeStrankoException.stNapak > 0){ 
           println("št politikov z več strankami: " + Politik.ImaZeStrankoException.stNapak);
           //double a = 1/0;
         }
+        PROGRESS++;
         /*nov način določanja barv!
         barveBesed = new float[PStranka.zanimiveBesede.size()][3];
         for(int i = 0; i < barveBesed.length; i++) {
@@ -340,7 +351,7 @@ void setup() {
         loadingText = "Prebiranje parlamentarnih sej";
          
         preberiSeje();
-        
+        PROGRESS++;
         //testStevilaBesed();
         if(true){
           println("printanje vseh besed ...");
@@ -363,13 +374,14 @@ void setup() {
             }
           }
         }
-        println("vse besede: " + GrupaBesed.vseBesede);
-        println("pociscene besede: " + GrupaBesed.pocisceneBesede);
-        println("max pojavitev: " + GrupaBesed.max);
+        println("Progress: " + PROGRESS++);
+       // println("pociscene besede: " + GrupaBesed.pocisceneBesede);
+       // println("max pojavitev: " + GrupaBesed.max);
         loadingText = "Pripravljanje na izris";
         for(Node n : graph.nodes) {
           n.radius = n.data.politiki.size() + 30;
         }
+        delay(1000);
         loaded=true;
     }
   };
@@ -414,28 +426,41 @@ void update() {
   slider.update();
   datum_prikaza = datumi.get(int(slider.getProc() * datumi.size()));
 }
- 
+static int lAlpha = 255;
+static int lAlphaStep = 5;
+static boolean increase = false;
 void updateLoading(){
   background(105);
+
   pushMatrix();
-  textSize(70);
-  translate(WIDTH/2- textWidth("NALAGAM")/2, HEIGHT/2);
-  //rotate(start - percentage/2);
-   fill(255, 255, 255);
-  text("NALAGAM" , 8, textAscent()/4);
+     int d = (int)( (((float)PROGRESS)/477) *360);
+    fill(255, 255, 255,105);
+    translate(WIDTH/2, HEIGHT/2);
+    arc(0, 0, 400, 400, 0, d*PI/180 );
+    //println(d  );
+  popMatrix();  
+
+  pushMatrix();
+    textSize(70);
+    translate((WIDTH/2)- (textWidth("NALAGAM")/2)-1, HEIGHT/2);
+    //rotate(start - percentage/2);
+    fill(255, 255, 255,lAlpha);
+    if(increase)lAlpha+=lAlphaStep;
+    else lAlpha-=lAlphaStep;
+    if(lAlpha< 100) increase=true;
+    if(lAlpha == 255) increase= false;
+    //text("NALAGAM" , 8, textAscent()/4);
   popMatrix();
-   pushMatrix();
-  textSize(25);
-  
-  translate(WIDTH/2- textWidth(loadingText)/2, HEIGHT/2+80);
-  
-  fill(105);
-  float t = textWidth(loadingText);
-  
-  stroke(0,0);
-  rect(-50, -40, t+t/2, 80);
-   fill(255, 255, 255);
-  text(loadingText , 8, textAscent()/4);
+
+  pushMatrix();
+    textSize(25);
+    translate(WIDTH/2- textWidth(loadingText)/2, HEIGHT/2);
+    fill(255,105);
+    float t = textWidth(loadingText);
+    stroke(0,0);
+    //rect(-50, -40, t+t/2, 80);
+    fill(255, 255,255, lAlpha);
+    text(loadingText , 8, textAscent()/4);
   popMatrix();
 }
 void draw() {
