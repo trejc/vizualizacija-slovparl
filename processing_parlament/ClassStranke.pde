@@ -299,6 +299,16 @@ static class PStranka {
         gr.finalPass();
       }
   }
+  
+  public int vseBesedeDoDatuma(String datum) {
+    int vsota = 0;
+    for(GrupaBesed g : grupeBesed) {
+      vsota += g.vsePojavitve(datum);
+    }
+    
+    return vsota;
+  }
+  
   public String imeStranke(String full, String datum) { 
     for(XML orgName : orgNames) {
       if(orgName.getString("full") != null) {

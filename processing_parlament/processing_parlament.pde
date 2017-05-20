@@ -223,6 +223,7 @@ void setup() {
   PROGRESS=0;
  
   size(800, 600);
+  background(105);
   stranke = new HashMap<String, PStranka>();
   politiki = new  HashMap<String, Politik>();
   grupe_besed = new HashMap<String, HashMap<String, Integer>>();
@@ -389,19 +390,16 @@ void setup() {
        // println("pociscene besede: " + GrupaBesed.pocisceneBesede);
        // println("max pojavitev: " + GrupaBesed.max);
         loadingText = "Pripravljanje na izris";
-        int d =  graph.nodes.size();
-         int i = 0;
+        
         for(Node n : graph.nodes) {
-           
           n.radius = n.data.politiki.size() + 30;
-   
         }
+        
         delay(1000);
         loaded=true;
     }
   };
    a.start();
-
 }
 
 static boolean prviDatumKasnejsi(String datum1, String datum2) {
@@ -437,9 +435,36 @@ static void CRASH_APP(){
 }
 
 void update() {
+  graph.edges = new ArrayList<Edge>();
   graph.separateNodes(100);
   slider.update();
   datum_prikaza = datumi.get(int(slider.getProc() * datumi.size()));
+  
+  for(Node n1 : graph.nodes) {
+    PStranka s1 = n1.data;
+    PStranka s2;
+    for(Node n2 : graph.nodes) {
+      s2 = n2.data;
+      int vseBesede1 = s1.vseBesedeDoDatuma(datum_prikaza);
+      int vseBesede2 = s2.vseBesedeDoDatuma(datum_prikaza);
+      if(n1 != n2 && n1.drawable && n2.drawable && vseBesede1 > 0 && vseBesede2 > 0) {
+        float enaka_zanimanja = 0;
+        for(int i = 0; i < grupe_besed.size(); i++) {
+          GrupaBesed g1 = s1.grupeBesed.get(i);
+          GrupaBesed g2 = s2.grupeBesed.get(i);
+          
+          float proc1 = vseBesede1 > 0 ? float(int(g1.vsePojavitve(datum_prikaza)))/float(vseBesede1) : 0;
+          float proc2 = vseBesede2 > 0 ? float(int(g2.vsePojavitve(datum_prikaza)))/float(vseBesede2) : 0;
+          
+          if(proc1 > 0 && proc2 > 0 && abs(proc1 - proc2) < 0.04f)
+            enaka_zanimanja++;
+        }
+        if(enaka_zanimanja >= 3) {
+          graph.edges.add(new Edge(n1, n2));
+        }
+      }
+    }
+  }
 }
 static int lAlpha = 255;
 static int lAlphaStep = 5;
@@ -448,7 +473,7 @@ void updateLoading(){
   background(105);
 
   pushMatrix();
-     int d = (int)(PROGRESS);
+    int d = (int)(PROGRESS);
     fill(255, 255, 255,105);
     translate(WIDTH/2, HEIGHT/2);
     arc(0, 0, 400, 400, 0, d*PI/180 );
@@ -493,6 +518,10 @@ void draw() {
     noStroke();
     smooth();
     
+    for(Edge e : graph.edges) {
+      e.render();
+    }
+    
     for(Node n : graph.nodes) {
       n.render(camera, datum_prikaza);
     }
@@ -515,8 +544,9 @@ void mouseWheel(MouseEvent event) {
 }
 
 void mousePressed() {
-  if(slider.overEvent())
+  if(slider.overEvent()) {
     slider.locked = true;
+  }
 }
 
 void mouseDragged(MouseEvent event) {

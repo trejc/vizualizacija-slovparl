@@ -116,6 +116,12 @@ class Edge {
     
     return null;
   }
+  
+  public void render() {
+    stroke(255);
+    line(endpoint1.x, endpoint1.y, endpoint2.x, endpoint2.y);
+    noStroke();
+  }
 }
 class Node {
   float x, y;
@@ -154,7 +160,7 @@ class Node {
     y += (dy * 0.35f);
   }
   
-  void render(Camera cam, String datum) {
+  public void render(Camera cam, String datum) {
     String s;
     s = data.imeStranke("init", datum);
     
