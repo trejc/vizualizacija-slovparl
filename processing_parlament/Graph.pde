@@ -203,9 +203,19 @@ class Node {
         }
         
         if(sq(mouseX-(x*cam.zoom+cam.x)) + sq(mouseY-(y*cam.zoom+cam.y)) <= sq(radius*cam.zoom)) {
+          //premik nouda, ce je miska na njej kliknena
+          if(mousePressed && (node_selected == null || node_selected == this)) {
+            this.x += (mouseX - pmouseX)/cam.zoom;
+            this.y += (mouseY - pmouseY)/cam.zoom;
+            node_selected = this;
+          }
+          
+          //pomikanje teksta navzgor/navzdol
           if(text_y < radius + 10) text_y += 4;
           s = data.imeStranke("yes", datum);
           textSize(6);
+          
+          //izpis besede, na katero kaze miska
           start = 0;
           for(GrupaBesed gB: grupeBesed) {
             besede = gB.besede.get(datum);
@@ -248,6 +258,12 @@ class Node {
         }else {
           textSize(14);
           if(text_y > 0) text_y -= 1;
+          
+          if(node_selected == this) {
+            this.x += (mouseX - pmouseX)/cam.zoom;
+            this.y += (mouseY - pmouseY)/cam.zoom;
+            node_selected = this;
+          }
         }
           
         textSize(14);
@@ -281,7 +297,7 @@ class Graph {
       n1 = nodes.get(i);
       for(int j = 0; j < nodes.size(); j++) {
         n2 = nodes.get(j);
-        if(i != j && n1.isOverlapping(n2, minDistance) && n1.drawable && n2.drawable) {
+        if(i != j && n1.isOverlapping(n2, minDistance) && n1.drawable && n2.drawable && (node_selected == null || !node_selected.equals(n1) && !node_selected.equals(n2))) {
           v1 = new PVector(n1.x, n1.y);
           v2 = new PVector(n2.x, n2.y);
           
