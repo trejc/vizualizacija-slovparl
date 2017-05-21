@@ -336,7 +336,7 @@ void setup() {
         * Tukilele se nastav barve (new int[]{hue, saturation, brightness})
         **/
         int s = 60;
-        int b = 80;
+        int b = 74;
         barve_grup.put("gospodarstvo", new int[]{0, s, b});
         barve_grup.put("obramba", new int[]{50, s, b});
         barve_grup.put("liberalizem", new int[]{100, s, b});
@@ -458,10 +458,10 @@ void update() {
           float proc1 = vseBesede1 > 0 ? float(int(g1.vsePojavitve(datum_prikaza)))/float(vseBesede1) : 0;
           float proc2 = vseBesede2 > 0 ? float(int(g2.vsePojavitve(datum_prikaza)))/float(vseBesede2) : 0;
           
-          if(proc1 > 0 && proc2 > 0 && abs(proc1 - proc2) < 0.04f)
-            enaka_zanimanja++;
+          if(proc1 > 0 || proc2 > 0)
+            enaka_zanimanja += sq(abs(proc1 - proc2));
         }
-        if(enaka_zanimanja >= 3) {
+        if(enaka_zanimanja <= sq(0.13f)) {
           graph.edges.add(new Edge(n1, n2));
         }
       }

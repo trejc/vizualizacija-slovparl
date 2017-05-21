@@ -190,7 +190,7 @@ class Node {
                 float percentage = TWO_PI*float(besede.get(beseda))/float(int(vseBesede));
                 
                 colorMode(HSB, 360, 100, 100);
-                fill(barva[0], barva[1], barva[2] - grupe_besed.get(gB.labelGrupe).get(beseda)*5);
+                fill(barva[0], barva[1], barva[2] - grupe_besed.get(gB.labelGrupe).get(beseda)+1.0f);
                 arc(x, y, radius, radius, start, start + percentage);
                 colorMode(RGB, 255, 255, 255);
                 
@@ -401,11 +401,9 @@ class Legend{
            translate(0, vertPad);
            int[] cl = lokalneBarve.get(label);
            fill(cl[0], cl[1], cl[2]);
-           stroke(0, 0, 90);
            rect(0, 0-textAscent()*0.75,horIconRad, horIconRad);
            fill(0, 0, 80);
            text(label, horIconPad ,0);
-           noStroke();
         }
         colorMode(RGB, 255, 255, 255);
       popMatrix();
