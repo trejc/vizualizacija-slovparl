@@ -148,25 +148,22 @@ public void preberiSeje(){
   
    String [] imenaDatotek = getFileNames();
   //imenaDatotek.length
-  print("0%");
+   //print("0%");
   int d = imenaDatotek.length;
   for(int i = 0; i < imenaDatotek.length; i++){
-    //println(folderPath+"/"+imenaDatotek[i]);
+    // //println(folderPath+"/"+imenaDatotek[i]);
     XML xml = loadXML(folderPath+"/"+imenaDatotek[i]);
     XML body = xml.getChild("text").getChild("body");
     
     Politik.prestejBesede(body, imenaDatotek[i].substring(0,10), imenaDatotek[i].substring(imenaDatotek[i].length()-11,imenaDatotek[i].length()-7), politiki);
-    if(Math.round((i/imenaDatotek.length)*10) == 5 ) print("50%");
-    else System.out.print("=");
-     
     PROGRESS=(Math.round(((float) i/d)*342));
   }
-  println("100%");
+   //println("100%");
   for(String key : politiki.keySet()){
        politiki.get(key).UrejeniDatumi = new TreeSet<String>(politiki.get(key).StBesedNaSejo.keySet());
         
   }
-  println("purging");
+   //println("purging");
   long t0 = System.currentTimeMillis();
   for(String key : stranke.keySet()){
       stranke.get(key).precistiGrupe(Math.round(3));
@@ -188,8 +185,8 @@ public void preberiSeje(){
     for(String key : stranke.keySet()){
       stranke.get(key).fPass();
     }
-  println("purge done, trajalo je: " + (System.currentTimeMillis()-t0) + " ms");
-  println("done");
+   //println("purge done, trajalo je: " + (System.currentTimeMillis()-t0) + " ms");
+   //println("done");
 }
 public void testStevilaBesed(){
     for(String key : politiki.keySet()){
@@ -343,13 +340,13 @@ void setup() {
         barve_grup.put("nacionalizem", new int[]{200, s, b});
         barve_grup.put("socializem", new int[]{300, s, b});
         
-        println(stranke.keySet());
-        println("število strank:" + stranke.size());
+         //println(stranke.keySet());
+         //println("število strank:" + stranke.size());
          
         loadingText = "Prebiranje politikov";
-        if( Politik.naloziPolitike(xml,stranke,politiki)) System.out.println("nalaganje politikov koncano!\nŠtevilo neuvrščenih elementov: " + politiki.size());
+        if( Politik.naloziPolitike(xml,stranke,politiki))  // //println //println("nalaganje politikov koncano!\nŠtevilo neuvrščenih elementov: " + politiki.size());
         if(Politik.ImaZeStrankoException.stNapak > 0){ 
-          println("št politikov z več strankami: " + Politik.ImaZeStrankoException.stNapak);
+           //println("št politikov z več strankami: " + Politik.ImaZeStrankoException.stNapak);
           //double a = 1/0;
         }
          
@@ -359,27 +356,27 @@ void setup() {
           barveBesed[i] = new float[]{random(255), random(255), random(255)};
         }
         */
-        println("branje sej ...");
+         //println("branje sej ...");
         loadingText = "Prebiranje parlamentarnih sej";
          
         preberiSeje();
          
         //testStevilaBesed();
         if(true){
-          println("printanje vseh besed ...");
+           //println(" //printanje vseh besed ...");
           for(String stra1: stranke.keySet()){
             //HashMap<String, Integer>
             ArrayList<GrupaBesed> grupe = stranke.get(stra1).grupeBesed;
             for(GrupaBesed gBe: grupe){
-              println(gBe.labelGrupe);
+               //println(gBe.labelGrupe);
               for(String datum : new TreeSet<String>(gBe.besede.keySet()) ){
-                print(stra1 +"] "+ datum + ": ");
-                println(gBe.vsePojavitve(datum));
+                 //print(stra1 +"] "+ datum + ": ");
+                 //println(gBe.vsePojavitve(datum));
                 int top = 5;
                 for(String beseda : gBe.besede.get(datum).keySet()){
                   if(top == 0) break;
                   top--;
-                  println("    "+ beseda + ", " + gBe.besede.get(datum).get(beseda));
+                   //println("    "+ beseda + ", " + gBe.besede.get(datum).get(beseda));
                 }
                 
               }
@@ -388,9 +385,9 @@ void setup() {
         }
         legenda = new Legend(500, 500,10,7,2);
         legenda.setup();
-        println("Progress: " + PROGRESS);
-       // println("pociscene besede: " + GrupaBesed.pocisceneBesede);
-       // println("max pojavitev: " + GrupaBesed.max);
+         //println("Progress: " + PROGRESS);
+       //  //println("pociscene besede: " + GrupaBesed.pocisceneBesede);
+       //  //println("max pojavitev: " + GrupaBesed.max);
         loadingText = "Pripravljanje na izris";
         
         for(Node n : graph.nodes) {
@@ -399,6 +396,7 @@ void setup() {
         
         delay(1000);
         loaded=true;
+        
     }
   };
    a.start();
@@ -479,7 +477,7 @@ void updateLoading(){
     fill(255, 255, 255,105);
     translate(WIDTH/2, HEIGHT/2);
     arc(0, 0, 400, 400, 0, d*PI/180 );
-    //println(d  );
+    // //println(d  );
   popMatrix();  
 
   pushMatrix();
@@ -562,3 +560,14 @@ void mouseDragged(MouseEvent event) {
   }
  
 }
+
+void keyPressed(){
+   if(keyCode == LEFT){
+    slider.newspos-=15;
+  }else if (keyCode == RIGHT){
+     slider.newspos+=15;
+  }
+  if(slider.newspos < 50) slider.newspos = 50;
+  if(slider.newspos > 740) slider.newspos = 740;
+}
+

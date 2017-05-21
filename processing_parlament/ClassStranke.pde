@@ -116,7 +116,7 @@ static class GrupaBesed{
         }
       }
     } catch (Exception e) {
-       println("error [AddWord]  ob klicu " + " datum: " + datum);
+        //println("error [AddWord]  ob klicu " + " datum: " + datum);
       
       CRASH_APP();
     }
@@ -127,7 +127,7 @@ static class GrupaBesed{
   public final void finalPass(){
     //Skozi vse datume in prekopiraj iz prejšnjega, če ne obstaja
     //HashMap<String, Integer> novDatum =  kopiraj(besede.get(prejDatum));
-    //println(datumi);
+    // //println(datumi);
     HashMap<String, Integer> lastDatum = null;
     for(String datum : datumi){
       if(!jeDatum(datum)){
@@ -192,7 +192,7 @@ static class GrupaBesed{
         e.printStackTrace();
       }
     }
-    //println("End sortiranje: " + sortingLokal);
+    // //println("End sortiranje: " + sortingLokal);
 
   }
   public final void sortDatum(String datum){
@@ -223,7 +223,7 @@ static class GrupaBesed{
       
       Thread sortT = new Thread(){
                         public void run(){
-                            //println("start sorting thread, current: " + GrupaBesed.sorting );
+                            // //println("start sorting thread, current: " + GrupaBesed.sorting );
                             sortAllDates();
                         }
                     };

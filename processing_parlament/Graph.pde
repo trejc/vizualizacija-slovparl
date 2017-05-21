@@ -33,10 +33,12 @@ class DatumSlider {
     }
     if (locked) {
       newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
+      
     }
     if (abs(newspos - spos) > 1) {
       spos = spos + (newspos-spos)/loose;
     }
+    //println(String.format("spos: %s",spos));
   }
   
   float constrain(float val, float minv, float maxv) {
@@ -228,7 +230,7 @@ class Node {
                 }else {
                   float angle = atan2(mouseY - (y*cam.zoom+cam.y), mouseX - (x*cam.zoom+cam.x));
                   angle = angle < 0 ?  TWO_PI+angle : angle;
-                   println(start + " %:" + percentage + " /:" + angle);
+                   //println(start + " %:" + percentage + " /:" + angle);
                   if(angle >= start && angle <= start + percentage) {
                     pushMatrix();
                     textSize(6);
@@ -365,7 +367,7 @@ class Legend{
       textSize(titleSIze);
       width=Math.round(textWidth("LEGENDA:"))+horPad*2;
       height=Math.round(textAscent())+vertPad*2;
-      println(width + " || " + height);
+      //println(width + " || " + height);
     popMatrix();
     pushMatrix();
         textSize(grSize);
@@ -380,7 +382,7 @@ class Legend{
       
     }
     popMatrix();
-    println(lokalneBarve.keySet());
+    //println(lokalneBarve.keySet());
   }
   
   public void render(){
